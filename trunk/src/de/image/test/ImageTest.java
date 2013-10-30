@@ -11,7 +11,11 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.apache.log4j.Logger;
+
 public class ImageTest {
+
+	private final static Logger logger = Logger.getLogger(ImageTest.class);
 
 	public static void main(String[] args) throws IOException {
 
@@ -72,6 +76,11 @@ public class ImageTest {
 		int rgb = image.getRGB(point.x, point.y);
 		Color c = new Color(rgb);
 		return c;
+	}
+
+	public static void test() {
+		System.out.println("test");
+		logger.warn("Warning");
 	}
 
 }
