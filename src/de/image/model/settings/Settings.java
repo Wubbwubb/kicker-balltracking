@@ -4,28 +4,50 @@ import java.util.ResourceBundle;
 
 public final class Settings {
 
-	public static String PATH_LOG;
+	private static Settings singleton;
 
-	public static String FILE_LOG;
-	public static boolean LOG_TO_FILE;
+	// ##### window settings #####
+	private String windowTitle;
+	private int windowWidth;
+	private int windowHeight;
 
-	public static int WINDOW_WIDTH;
-	public static int WINDOW_HEIGHT;
-
-	public static String WINDOW_TITLE;
-
-	static {
+	private Settings() {
 		ResourceBundle resBundle = ResourceBundle.getBundle("settings");
 
-		PATH_LOG = resBundle.getString("log_path");
+		setWindowTitle(resBundle.getString("window_title"));
+		setWindowWidth(Integer.parseInt(resBundle.getString("window_width")));
+		setWindowHeight(Integer.parseInt(resBundle.getString("window_height")));
+	}
 
-		FILE_LOG = resBundle.getString("log_file");
-		LOG_TO_FILE = Boolean.parseBoolean(resBundle.getString("log_to_file"));
+	public static Settings getInstance() {
+		if (singleton == null) {
+			singleton = new Settings();
+		}
+		return singleton;
+	}
 
-		WINDOW_WIDTH = Integer.parseInt(resBundle.getString("window_width"));
-		WINDOW_HEIGHT = Integer.parseInt(resBundle.getString("window_height"));
+	public String getWindowTitle() {
+		return windowTitle;
+	}
 
-		WINDOW_TITLE = resBundle.getString("window_title");
+	public void setWindowTitle(String windowTitle) {
+		this.windowTitle = windowTitle;
+	}
+
+	public int getWindowWidth() {
+		return windowWidth;
+	}
+
+	public void setWindowWidth(int windowWidth) {
+		this.windowWidth = windowWidth;
+	}
+
+	public int getWindowHeight() {
+		return windowHeight;
+	}
+
+	public void setWindowHeight(int windowHeight) {
+		this.windowHeight = windowHeight;
 	}
 
 }
