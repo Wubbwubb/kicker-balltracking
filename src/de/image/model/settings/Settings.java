@@ -100,6 +100,7 @@ public final class Settings {
 	}
 
 	public void setImagePlaceholder(String imagePlaceholder) {
+		imagePlaceholder = imagePlaceholder.replace("/", File.separator);
 		this.imagePlaceholder = imagePlaceholder;
 	}
 
