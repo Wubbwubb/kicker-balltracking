@@ -23,10 +23,14 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -35,9 +39,10 @@ public class MainWindow extends Application {
 	private final static Logger logger = Logger.getLogger(MainWindow.class);
 	private final static Settings settings = Settings.getInstance();
 
+	private AnchorPane imgAnchor;
 	private ImageView imgView;
-	private Button btnLeft;
-	private Button btnRight;
+	private Button btnPrev;
+	private Button btnNext;
 	private Label lbDirectory;
 	private Label lbFilename;
 
@@ -66,9 +71,9 @@ public class MainWindow extends Application {
 		GridPane gridPane = new GridPane();
 		gridPane.setId("gridPane");
 
-		btnLeft = new Button();
-		btnLeft.setText("prev");
-		btnLeft.setOnAction(new EventHandler<ActionEvent>() {
+		btnPrev = new Button();
+		btnPrev.setText("prev");
+		btnPrev.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
@@ -77,11 +82,11 @@ public class MainWindow extends Application {
 			}
 
 		});
-		btnLeft.setPrefWidth(50);
+		btnPrev.setPrefWidth(50);
 
-		btnRight = new Button();
-		btnRight.setText("next");
-		btnRight.setOnAction(new EventHandler<ActionEvent>() {
+		btnNext = new Button();
+		btnNext.setText("next");
+		btnNext.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
@@ -90,7 +95,7 @@ public class MainWindow extends Application {
 			}
 
 		});
-		btnRight.setPrefWidth(50);
+		btnNext.setPrefWidth(50);
 
 		int width = 780;
 		int height = 515;
@@ -98,8 +103,8 @@ public class MainWindow extends Application {
 		VBox vboxLeft = getVBox(50, height, 0);
 		VBox vboxRight = getVBox(50, height, 0);
 
-		vboxLeft.getChildren().add(btnLeft);
-		vboxRight.getChildren().add(btnRight);
+		vboxLeft.getChildren().add(btnPrev);
+		vboxRight.getChildren().add(btnNext);
 
 		vboxLeft.setAlignment(Pos.CENTER);
 		vboxRight.setAlignment(Pos.CENTER);
@@ -123,6 +128,8 @@ public class MainWindow extends Application {
 
 		hboxBottom.setAlignment(Pos.CENTER);
 
+		imgAnchor = new AnchorPane();
+
 		imgView = new ImageView();
 		imgView.setId("imgView");
 
@@ -130,7 +137,30 @@ public class MainWindow extends Application {
 
 		refreshDirectory();
 
-		borderPaneImage.setCenter(imgView);
+		imgAnchor.getChildren().add(imgView);
+		imgView.setLayoutX(10);
+		imgView.setLayoutY(10);
+
+		imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+
+				double initX = event.getX();
+				double initY = event.getY();
+
+				Circle circle = new Circle(initX, initY, 10);
+				circle.setFill(null);
+				circle.setStroke(Color.RED);
+				circle.setStrokeWidth(2);
+
+				imgAnchor.getChildren().add(circle);
+
+			}
+
+		});
+
+		borderPaneImage.setCenter(imgAnchor);
 		borderPaneImage.setLeft(vboxLeft);
 		borderPaneImage.setRight(vboxRight);
 		borderPaneImage.setTop(hboxTop);
@@ -171,8 +201,14 @@ public class MainWindow extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 
+				File preDir = new File(directory);
+
 				DirectoryChooser chooser = new DirectoryChooser();
-				chooser.setInitialDirectory(new File(directory));
+
+				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+					chooser.setInitialDirectory(preDir);
+				}
+
 				chooser.setTitle(settings.getChooserTitle());
 				File selectedDir = chooser.showDialog(primaryStage);
 
@@ -283,14 +319,6 @@ public class MainWindow extends Application {
 				logger.error("File: " + settings.getImagePlaceholder()
 						+ " not found!", e1);
 				currentFile = "-";
-			} finally {
-				if (fIn != null) {
-					try {
-						fIn.close();
-					} catch (IOException e1) {
-						logger.fatal("can not close FileInputStream", e1);
-					}
-				}
 			}
 		} finally {
 
@@ -314,14 +342,14 @@ public class MainWindow extends Application {
 
 	private void checkNavBtns() {
 		if (currentIndex <= 0) {
-			btnLeft.setDisable(true);
+			btnPrev.setDisable(true);
 		} else {
-			btnLeft.setDisable(false);
+			btnPrev.setDisable(false);
 		}
 		if (currentIndex >= files.length - 1) {
-			btnRight.setDisable(true);
+			btnNext.setDisable(true);
 		} else {
-			btnRight.setDisable(false);
+			btnNext.setDisable(false);
 		}
 	}
 
@@ -354,14 +382,6 @@ public class MainWindow extends Application {
 				logger.error("File: " + settings.getImagePlaceholder()
 						+ " not found!", e1);
 				currentFile = "-";
-			} finally {
-				if (fIn != null) {
-					try {
-						fIn.close();
-					} catch (IOException e1) {
-						logger.fatal("can not close FileInputStream", e1);
-					}
-				}
 			}
 		} finally {
 
