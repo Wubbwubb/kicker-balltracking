@@ -1,5 +1,5 @@
 #gridPane {
-	-fx-background-color: #3ff33f;
+	-fx-background-color: #aeaeae;
 	-fx-hgap: 10;
 	-fx-vgap: 10;
 	-fx-padding: 10;
@@ -12,5 +12,5 @@
 
 #borderPaneMain {
 	-fx-padding: 10;
-	-fx-background-color: #aeaeae;
+	-fx-background-color: #eaeaea;
 }

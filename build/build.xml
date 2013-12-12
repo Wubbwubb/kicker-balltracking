@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Kicker BallTracking with libraries in sub-folder">
+
+    <target name="create_run_jar">
+    	
+    	<property name="src_dir" value="C:/Users/Max/workspace/Kicker BallTracking"/>
+    	<property name="dest_dir" value="C:/Users/Max/Desktop/Praktikum"/>
+
+        <jar destfile="${dest_dir}/KickerTracking.jar">
+            <manifest>
+                <attribute name="Main-Class" value="de.image.view.MainWindow"/>
+                <attribute name="Class-Path" value=". KickerTracking_lib/jfxrt.jar KickerTracking_lib/log4j-1.2.15.jar"/>
+            </manifest>
+            <fileset dir="${src_dir}/bin"/>
+        </jar>
+    	
+        <copy file="${src_dir}/build/startup.bat" todir="${dest_dir}"/>
+    	
+        <delete dir="${dest_dir}/KickerTracking_lib"/>
+        <mkdir dir="${dest_dir}/KickerTracking_lib"/>
+    	
+        <delete dir="${dest_dir}/images"/>
+        <mkdir dir="${dest_dir}/images"/>
+    	
+        <delete dir="${dest_dir}/log"/>
+        <mkdir dir="${dest_dir}/log"/>
+    	
+        <copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/KickerTracking_lib"/>
+        <copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/KickerTracking_lib"/>
+    	
+        <copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images"/>
+        <copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images"/>
+    </target>
+</project>

@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import de.image.model.BallTracking;
 import de.image.model.settings.Settings;
 
 import javafx.application.Application;
@@ -46,10 +47,12 @@ public class MainWindow extends Application {
 	private Label lbDirectory;
 	private Label lbFilename;
 
-	private String directory;
-	private String currentFile;
-	private String[] files;
+	private File directory;
+	private File currentFile;
+	private File[] files;
 	private int currentIndex = 0;
+
+	private BallTracking ballTracking;
 
 	private Cursor cursor = Cursor.CROSSHAIR;
 
@@ -61,7 +64,7 @@ public class MainWindow extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
 
-		VBox vboxMain = getVBox(-1, -1, -1);
+		VBox vboxMain = FXUtil.getVBox(-1, -1, -1);
 		BorderPane borderPaneMain = new BorderPane();
 		borderPaneMain.setId("borderPaneMain");
 
@@ -92,6 +95,9 @@ public class MainWindow extends Application {
 			public void handle(ActionEvent event) {
 				currentIndex++;
 				refreshImageView();
+				if (ballTracking != null) {
+					ballTracking.trackIndex(currentIndex);
+				}
 			}
 
 		});
@@ -100,8 +106,8 @@ public class MainWindow extends Application {
 		int width = 780;
 		int height = 515;
 
-		VBox vboxLeft = getVBox(50, height, 0);
-		VBox vboxRight = getVBox(50, height, 0);
+		VBox vboxLeft = FXUtil.getVBox(50, height, 0);
+		VBox vboxRight = FXUtil.getVBox(50, height, 0);
 
 		vboxLeft.getChildren().add(btnPrev);
 		vboxRight.getChildren().add(btnNext);
@@ -109,17 +115,17 @@ public class MainWindow extends Application {
 		vboxLeft.setAlignment(Pos.CENTER);
 		vboxRight.setAlignment(Pos.CENTER);
 
-		HBox hboxTop = getHBox(width - 20, 0, 0);
-		HBox hboxBottom = getHBox(width - 20, 25, 50);
+		HBox hboxTop = FXUtil.getHBox(width - 20, 0, 0);
+		HBox hboxBottom = FXUtil.getHBox(width - 20, 25, 50);
 
-		lbDirectory = new Label(directory);
-		lbFilename = new Label(currentFile);
+		lbDirectory = new Label("-");
+		lbFilename = new Label("-");
 
-		HBox hboxBottomLeft = getHBox(-1, -1, 5);
+		HBox hboxBottomLeft = FXUtil.getHBox(-1, -1, 5);
 		hboxBottomLeft.getChildren().add(new Label("folder:"));
 		hboxBottomLeft.getChildren().add(lbDirectory);
 
-		HBox hboxBottomRight = getHBox(-1, -1, 5);
+		HBox hboxBottomRight = FXUtil.getHBox(-1, -1, 5);
 		hboxBottomRight.getChildren().add(new Label("file:"));
 		hboxBottomRight.getChildren().add(lbFilename);
 
@@ -133,7 +139,12 @@ public class MainWindow extends Application {
 		imgView = new ImageView();
 		imgView.setId("imgView");
 
-		directory = settings.getImageDir();
+		String dir = settings.getImageDir();
+		if ("".equals(dir.trim())) {
+			directory = null;
+		} else {
+			directory = new File(dir);
+		}
 
 		refreshDirectory();
 
@@ -187,6 +198,23 @@ public class MainWindow extends Application {
 
 		gridPane.add(btnCursor, 0, 0);
 
+		Button btnStartTracking = new Button();
+		btnStartTracking.setText("Start Tracking");
+		btnStartTracking.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				if (ballTracking != null) {
+
+				}
+				ballTracking = new BallTracking(files, currentIndex);
+				logger.info("Start Tracking");
+			}
+
+		});
+
+		gridPane.add(btnStartTracking, 0, 1);
+
 		borderPaneMain.setCenter(borderPaneImage);
 		borderPaneMain.setRight(gridPane);
 
@@ -195,13 +223,15 @@ public class MainWindow extends Application {
 		Menu menuFile = new Menu("File");
 		Menu menuEdit = new Menu("Edit");
 
-		MenuItem chooseFolder = new MenuItem("open Folder");
+		MenuItem chooseFolder = new MenuItem("Open Folder");
 		chooseFolder.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
 
-				File preDir = new File(directory);
+				String dir = directory == null ? "" : directory
+						.getAbsolutePath();
+				File preDir = new File(dir);
 
 				DirectoryChooser chooser = new DirectoryChooser();
 
@@ -215,7 +245,7 @@ public class MainWindow extends Application {
 				if (selectedDir == null) {
 					logger.warn("no directory chosen");
 				} else {
-					directory = selectedDir.getAbsolutePath();
+					directory = selectedDir;
 					refreshDirectory();
 				}
 
@@ -262,68 +292,37 @@ public class MainWindow extends Application {
 		primaryStage.show();
 	}
 
-	private HBox getHBox(int width, int height, int spacing) {
-		HBox hbox = new HBox();
-		if (width >= 0) {
-			hbox.setMinWidth(width);
-			hbox.setPrefWidth(width);
-			hbox.setMaxWidth(width);
-		}
-		if (height >= 0) {
-			hbox.setMinHeight(height);
-			hbox.setPrefHeight(height);
-			hbox.setMaxHeight(height);
-		}
-		if (spacing >= 0) {
-			hbox.setSpacing(spacing);
-		}
-		return hbox;
-	}
-
-	private VBox getVBox(int width, int height, int spacing) {
-		VBox vbox = new VBox();
-		if (width >= 0) {
-			vbox.setMinWidth(width);
-			vbox.setPrefWidth(width);
-			vbox.setMaxWidth(width);
-		}
-		if (height >= 0) {
-			vbox.setMinHeight(height);
-			vbox.setPrefHeight(height);
-			vbox.setMaxHeight(height);
-		}
-		if (spacing >= 0) {
-			vbox.setSpacing(spacing);
-		}
-		return vbox;
-	}
-
 	private void refreshImageView() {
 
 		FileInputStream fIn = null;
 
 		try {
 
-			fIn = new FileInputStream(directory + File.separator
-					+ files[currentIndex]);
+			fIn = new FileInputStream(files[currentIndex]);
 			currentFile = files[currentIndex];
 			logger.info("changed image to " + directory + File.separator
 					+ files[currentIndex]);
 
 		} catch (Exception e) {
 			try {
-				directory = "-";
-				fIn = new FileInputStream(settings.getImagePlaceholder());
-				currentFile = settings.getImagePlaceholder();
+				directory = null;
+				currentFile = new File(settings.getImagePlaceholder());
+				fIn = new FileInputStream(currentFile);
 			} catch (FileNotFoundException e1) {
 				logger.error("File: " + settings.getImagePlaceholder()
 						+ " not found!", e1);
-				currentFile = "-";
+				currentFile = null;
 			}
 		} finally {
 
-			lbDirectory.setText(directory);
-			lbFilename.setText(currentFile);
+			String labelText = directory == null ? "-" : directory
+					.getAbsolutePath();
+			lbDirectory.setText(labelText);
+			labelText = currentFile == null
+					|| settings.getImagePlaceholder().endsWith(
+							currentFile.getName()) ? "-" : currentFile
+					.getName();
+			lbFilename.setText(labelText);
 
 			Image image = new Image(fIn);
 			imgView.setImage(image);
@@ -361,32 +360,39 @@ public class MainWindow extends Application {
 
 			currentIndex = 0;
 
-			File dirFile = new File(directory);
+			String dirString = directory == null ? "" : directory
+					.getAbsolutePath();
+			File dirFile = new File(dirString);
 
-			files = dirFile.list();
+			files = dirFile.listFiles();
 			if (files == null) {
-				files = new String[0];
+				files = new File[0];
 			}
 			Arrays.sort(files);
 
-			fIn = new FileInputStream(directory + File.separator
-					+ files[currentIndex]);
+			fIn = new FileInputStream(files[currentIndex]);
 			currentFile = files[currentIndex];
 
 		} catch (Exception e) {
 			try {
-				directory = "-";
-				fIn = new FileInputStream(settings.getImagePlaceholder());
-				currentFile = settings.getImagePlaceholder();
+				directory = null;
+				currentFile = new File(settings.getImagePlaceholder());
+				fIn = new FileInputStream(currentFile);
 			} catch (FileNotFoundException e1) {
 				logger.error("File: " + settings.getImagePlaceholder()
 						+ " not found!", e1);
-				currentFile = "-";
+				currentFile = null;
 			}
 		} finally {
 
-			lbDirectory.setText(directory);
-			lbFilename.setText(currentFile);
+			String labelText = directory == null ? "-" : directory
+					.getAbsolutePath();
+			lbDirectory.setText(labelText);
+			labelText = currentFile == null
+					|| settings.getImagePlaceholder().endsWith(
+							currentFile.getName()) ? "-" : currentFile
+					.getName();
+			lbFilename.setText(labelText);
 
 			checkNavBtns();
 
