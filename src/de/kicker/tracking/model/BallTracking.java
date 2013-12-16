@@ -1,4 +1,4 @@
-package de.image.model;
+package de.kicker.tracking.model;
 
 import java.util.Collection;
 

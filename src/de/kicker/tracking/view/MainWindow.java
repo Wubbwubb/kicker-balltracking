@@ -1,4 +1,4 @@
-package de.image.view;
+package de.kicker.tracking.view;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,11 +39,11 @@ import javafx.stage.Stage;
 
 import org.apache.log4j.Logger;
 
-import de.image.model.AutomaticBallTracking;
-import de.image.model.BallTracking;
-import de.image.model.Position;
-import de.image.model.TrackingImage;
-import de.image.model.settings.Settings;
+import de.kicker.tracking.model.AutomaticBallTracking;
+import de.kicker.tracking.model.BallTracking;
+import de.kicker.tracking.model.Position;
+import de.kicker.tracking.model.TrackingImage;
+import de.kicker.tracking.model.settings.Settings;
 
 public class MainWindow extends Application {
 
