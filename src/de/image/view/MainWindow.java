@@ -5,20 +5,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-
-import org.apache.log4j.Logger;
-
-import de.image.model.AutomaticBallTracking;
-import de.image.model.BallTracking;
-import de.image.model.settings.Settings;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -34,7 +33,17 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+
+import org.apache.log4j.Logger;
+
+import de.image.model.AutomaticBallTracking;
+import de.image.model.BallTracking;
+import de.image.model.Position;
+import de.image.model.TrackingImage;
+import de.image.model.settings.Settings;
 
 public class MainWindow extends Application {
 
@@ -53,6 +62,8 @@ public class MainWindow extends Application {
 	private File[] files;
 	private int currentIndex = 0;
 
+	private List<Node> pathNodes;
+
 	private BallTracking ballTracking;
 
 	private Cursor cursor = Cursor.CROSSHAIR;
@@ -64,6 +75,8 @@ public class MainWindow extends Application {
 
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
+
+		pathNodes = new LinkedList<>();
 
 		VBox vboxMain = FXUtil.getVBox(-1, -1, -1);
 		BorderPane borderPaneMain = new BorderPane();
@@ -167,6 +180,7 @@ public class MainWindow extends Application {
 				circle.setStrokeWidth(2);
 
 				imgAnchor.getChildren().add(circle);
+				logger.info("x: " + initX + "  /  y: " + initY);
 
 			}
 
@@ -205,11 +219,15 @@ public class MainWindow extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				if (ballTracking != null) {
-
-				}
 				ballTracking = new AutomaticBallTracking(files, directory
 						.getParent(), currentIndex);
+				while (!ballTracking.endOfFiles()) {
+					ballTracking.trackNext();
+					if (currentIndex < files.length - 1) {
+						currentIndex++;
+					}
+				}
+				refreshImageView();
 				logger.info("Start Tracking");
 			}
 
@@ -224,6 +242,51 @@ public class MainWindow extends Application {
 
 		Menu menuFile = new Menu("File");
 		Menu menuEdit = new Menu("Edit");
+
+		MenuItem chooseFile = new MenuItem("Open Image");
+		chooseFile.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				String dir = directory == null ? "" : directory
+						.getAbsolutePath();
+				File preDir = new File(dir);
+
+				FileChooser chooser = new FileChooser();
+
+				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+					chooser.setInitialDirectory(preDir);
+				}
+
+				chooser.setTitle(settings.getFileChooserTitle());
+				ExtensionFilter filter = new ExtensionFilter("image", "*.png",
+						"*.jpg");
+				chooser.getExtensionFilters().add(filter);
+				File selectedFile = chooser.showOpenDialog(primaryStage);
+
+				if (selectedFile == null) {
+					logger.warn("no file chosen");
+				} else {
+					directory = selectedFile.getParentFile();
+					refreshDirectory();
+					currentFile = selectedFile;
+					for (int i = 0; i < files.length; i++) {
+						if (files[i].equals(selectedFile)) {
+							currentIndex = i;
+							break;
+						}
+					}
+					refreshImageView();
+				}
+
+				logger.info("file " + selectedFile + " chosen");
+
+			}
+
+		});
+
+		menuFile.getItems().add(chooseFile);
 
 		MenuItem chooseFolder = new MenuItem("Open Folder");
 		chooseFolder.setOnAction(new EventHandler<ActionEvent>() {
@@ -241,7 +304,7 @@ public class MainWindow extends Application {
 					chooser.setInitialDirectory(preDir);
 				}
 
-				chooser.setTitle(settings.getChooserTitle());
+				chooser.setTitle(settings.getDirChooserTitle());
 				File selectedDir = chooser.showDialog(primaryStage);
 
 				if (selectedDir == null) {
@@ -258,6 +321,52 @@ public class MainWindow extends Application {
 		});
 
 		menuFile.getItems().add(chooseFolder);
+
+		final CheckMenuItem showPath = new CheckMenuItem("Show Path");
+		showPath.setSelected(false);
+		showPath.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				if (ballTracking != null && showPath.isSelected()) {
+
+					Collection<TrackingImage> images = ballTracking
+							.getAllTrackedImages();
+					for (TrackingImage image : images) {
+
+						Position pos = image.getBall().getPosition();
+						int initX = pos.getX();
+						int initY = pos.getY();
+
+						Circle circle = new Circle(
+								initX + imgView.getLayoutX(), initY
+										+ imgView.getLayoutY(), 2);
+						circle.setFill(null);
+						circle.setStroke(Color.RED);
+						circle.setStrokeWidth(2);
+
+						imgAnchor.getChildren().add(circle);
+						pathNodes.add(circle);
+
+					}
+
+					logger.info("show path true");
+				} else if (!showPath.isSelected()) {
+					for (Node node : pathNodes) {
+						imgAnchor.getChildren().remove(node);
+					}
+					pathNodes = new LinkedList<>();
+					logger.info("show path false");
+				} else {
+					showPath.setSelected(false);
+				}
+
+			}
+
+		});
+
+		menuEdit.getItems().add(showPath);
 
 		menuBar.getMenus().addAll(menuFile, menuEdit);
 

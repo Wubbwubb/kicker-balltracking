@@ -30,8 +30,8 @@ public class AutomaticBallTracking implements BallTracking {
 		}
 
 		Random r = new Random();
-		int x = r.nextInt(640);
-		int y = r.nextInt(480);
+		int x = r.nextInt(492) + 68;
+		int y = r.nextInt(283) + 77;
 		Position pos = new Position(x, y);
 		Ball ball = new Ball(pos);
 		TrackingImage image = new TrackingImage(files[currentIndex], ball);
