@@ -23,7 +23,8 @@ public final class Settings {
 	private String imageDir;
 	private String imagePlaceholder;
 
-	private String chooserTitle;
+	private String dirChooserTitle;
+	private String fileChooserTitle;
 
 	private Settings() {
 		InputStream fIn = null;
@@ -40,7 +41,9 @@ public final class Settings {
 			setImageDir(getProperty("image_dir", "E:\\Praktikum Master\\Bilder"));
 			setImagePlaceholder(getProperty("image_placeholder",
 					"images/img_placeholder"));
-			setChooserTitle(getProperty("folderchooser_title", "Choose Folder"));
+			setDirChooserTitle(getProperty("folderchooser_title",
+					"Choose Folder"));
+			setFileChooserTitle(getProperty("filechooser_title", "Choose Image"));
 			setWindowIcon(getProperty("window_icon", "images/icon.png"));
 
 		} catch (FileNotFoundException e) {
@@ -127,12 +130,12 @@ public final class Settings {
 		this.imagePlaceholder = imagePlaceholder;
 	}
 
-	public String getChooserTitle() {
-		return chooserTitle;
+	public String getDirChooserTitle() {
+		return dirChooserTitle;
 	}
 
-	private void setChooserTitle(String chooserTitle) {
-		this.chooserTitle = chooserTitle;
+	private void setDirChooserTitle(String chooserTitle) {
+		this.dirChooserTitle = chooserTitle;
 	}
 
 	public String getWindowIcon() {
@@ -141,6 +144,14 @@ public final class Settings {
 
 	private void setWindowIcon(String windowIcon) {
 		this.windowIcon = windowIcon;
+	}
+
+	public String getFileChooserTitle() {
+		return fileChooserTitle;
+	}
+
+	private void setFileChooserTitle(String fileChooserTitle) {
+		this.fileChooserTitle = fileChooserTitle;
 	}
 
 }
