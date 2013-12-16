@@ -1,4 +1,4 @@
-package de.image.test;
+package de.kicker.tracking.test;
 
 import java.awt.Color;
 import java.awt.Graphics;

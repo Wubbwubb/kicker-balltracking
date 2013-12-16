@@ -1,4 +1,4 @@
-package de.image.model.settings;
+package de.kicker.tracking.model.settings;
 
 import java.io.File;
 import java.io.FileInputStream;

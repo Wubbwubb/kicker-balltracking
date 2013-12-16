@@ -1,4 +1,4 @@
-package de.image.view;
+package de.kicker.tracking.view;
 
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
