@@ -1,0 +1,8 @@
+<!ELEMENT balltracking (image+)>
+<!ELEMENT image (position)>
+<!ELEMENT position EMPTY>
+
+<!ATTLIST balltracking directory CDATA #REQUIRED>
+<!ATTLIST image file CDATA #REQUIRED>
+<!ATTLIST position x CDATA #REQUIRED>
+<!ATTLIST position y CDATA #REQUIRED>

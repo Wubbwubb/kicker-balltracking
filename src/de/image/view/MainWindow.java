@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import de.image.model.AutomaticBallTracking;
 import de.image.model.BallTracking;
 import de.image.model.settings.Settings;
 
@@ -96,7 +97,7 @@ public class MainWindow extends Application {
 				currentIndex++;
 				refreshImageView();
 				if (ballTracking != null) {
-					ballTracking.trackIndex(currentIndex);
+					ballTracking.trackNext();
 				}
 			}
 
@@ -207,7 +208,8 @@ public class MainWindow extends Application {
 				if (ballTracking != null) {
 
 				}
-				ballTracking = new BallTracking(files, currentIndex);
+				ballTracking = new AutomaticBallTracking(files, directory
+						.getParent(), currentIndex);
 				logger.info("Start Tracking");
 			}
 

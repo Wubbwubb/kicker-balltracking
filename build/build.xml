@@ -20,16 +20,26 @@
         <delete dir="${dest_dir}/${lib_dir}"/>
         <mkdir dir="${dest_dir}/${lib_dir}"/>
     	
+        <delete dir="${dest_dir}/properties"/>
+        <mkdir dir="${dest_dir}/properties"/>
+    	
         <delete dir="${dest_dir}/images"/>
         <mkdir dir="${dest_dir}/images"/>
     	
         <delete dir="${dest_dir}/log"/>
         <mkdir dir="${dest_dir}/log"/>
     	
+        <delete dir="${dest_dir}/xml"/>
+        <mkdir dir="${dest_dir}/xml"/>
+    	
         <copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/${lib_dir}"/>
         <copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/${lib_dir}"/>
     	
+        <copy file="${src_dir}/properties/settings.properties" todir="${dest_dir}/properties"/>
+    	
         <copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images"/>
         <copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images"/>
+    	
+        <copy file="${src_dir}/xml/docType.dtd" todir="${dest_dir}/xml"/>
     </target>
 </project>
