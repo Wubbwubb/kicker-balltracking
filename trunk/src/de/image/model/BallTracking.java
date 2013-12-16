@@ -1,23 +1,15 @@
 package de.image.model;
 
-import java.io.File;
-import java.util.Map;
+import java.util.Collection;
 
-public class BallTracking {
+public interface BallTracking {
 
-	private File[] files;
-	private int currentIndex;
+	public String getDirectory();
 
-	private Map<File, TrackingImage> trackedImages;
-	private Map<File, TrackingImage> setImages;
+	public void trackNext();
 
-	public BallTracking(File[] files, int index) {
-		this.files = files;
-		currentIndex = index;
-	}
+	public boolean endOfFiles();
 
-	public void trackIndex(int index) {
-
-	}
+	public Collection<TrackingImage> getAllTrackedImages();
 
 }
