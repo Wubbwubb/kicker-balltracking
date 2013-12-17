@@ -28,7 +28,7 @@ public class ManualBallTracking implements BallTracking {
 
 	@Override
 	public void trackNext() {
-		
+
 	}
 
 	@Override
@@ -43,6 +43,11 @@ public class ManualBallTracking implements BallTracking {
 			images.add(image);
 		}
 		return images;
+	}
+
+	@Override
+	public boolean isTracked() {
+		return getAllTrackedImages().size() >= 2;
 	}
 
 }

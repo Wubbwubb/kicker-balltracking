@@ -9,8 +9,8 @@
 
         <jar destfile="${dest_dir}/KickerTracking.jar">
             <manifest>
-                <attribute name="Main-Class" value="de.image.view.MainWindow"/>
-                <attribute name="Class-Path" value=". ${lib_dir}/jfxrt.jar ${lib_dir}/log4j-1.2.15.jar"/>
+                <attribute name="Main-Class" value="de.kicker.tracking.view.BallTrackingApplication"/>
+                <attribute name="Class-Path" value=". ${lib_dir}/jdom-2.0.5.jar ${lib_dir}/jfxrt.jar ${lib_dir}/log4j-1.2.15.jar"/>
             </manifest>
             <fileset dir="${src_dir}/bin"/>
         </jar>
@@ -31,11 +31,13 @@
     	
         <delete dir="${dest_dir}/xml"/>
         <mkdir dir="${dest_dir}/xml"/>
-    	
+
+        <copy file="${src_dir}/lib/jdom-2.0.5.jar" todir="${dest_dir}/${lib_dir}"/>
         <copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/${lib_dir}"/>
         <copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/${lib_dir}"/>
     	
         <copy file="${src_dir}/properties/settings.properties" todir="${dest_dir}/properties"/>
+    	<replace file="${dest_dir}/properties/settings.properties" token="INSTALL_DIR" value="${dest_dir}"/>
     	
         <copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images"/>
         <copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images"/>

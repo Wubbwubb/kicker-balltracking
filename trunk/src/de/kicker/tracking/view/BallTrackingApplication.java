@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -43,11 +44,13 @@ import de.kicker.tracking.model.AutomaticBallTracking;
 import de.kicker.tracking.model.BallTracking;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
+import de.kicker.tracking.model.XMLLayer;
 import de.kicker.tracking.model.settings.Settings;
 
-public class MainWindow extends Application {
+public class BallTrackingApplication extends Application {
 
-	private final static Logger logger = Logger.getLogger(MainWindow.class);
+	private final static Logger logger = Logger
+			.getLogger(BallTrackingApplication.class);
 	private final static Settings settings = Settings.getInstance();
 
 	private AnchorPane imgAnchor;
@@ -286,8 +289,6 @@ public class MainWindow extends Application {
 
 		});
 
-		menuFile.getItems().add(chooseFile);
-
 		MenuItem chooseFolder = new MenuItem("Open Folder");
 		chooseFolder.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -320,7 +321,50 @@ public class MainWindow extends Application {
 
 		});
 
-		menuFile.getItems().add(chooseFolder);
+		MenuItem export2File = new MenuItem("Export");
+		export2File.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				if (ballTracking != null && ballTracking.isTracked()) {
+
+					String dir = directory == null ? "" : directory
+							.getAbsolutePath();
+					File preDir = new File(dir);
+
+					FileChooser chooser = new FileChooser();
+
+					if (preDir != null && preDir.exists()
+							&& preDir.isDirectory()) {
+						chooser.setInitialDirectory(preDir);
+					}
+
+					chooser.setTitle("Save File");
+					ExtensionFilter xmlFilter = new ExtensionFilter("xml",
+							"*.xml");
+					ExtensionFilter allFilter = new ExtensionFilter("all",
+							"*.*");
+					chooser.getExtensionFilters().addAll(xmlFilter, allFilter);
+					File selectedFile = chooser.showSaveDialog(primaryStage);
+
+					if (selectedFile == null) {
+						logger.warn("no file chosen");
+					} else {
+						XMLLayer.export2XML(ballTracking,
+								selectedFile.getAbsolutePath());
+					}
+
+					logger.info("file " + selectedFile + " chosen");
+
+				}
+
+			}
+
+		});
+
+		menuFile.getItems().addAll(chooseFile, chooseFolder,
+				new SeparatorMenuItem(), export2File);
 
 		final CheckMenuItem showPath = new CheckMenuItem("Show Path");
 		showPath.setSelected(false);

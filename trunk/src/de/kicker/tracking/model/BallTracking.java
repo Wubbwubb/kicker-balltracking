@@ -9,6 +9,8 @@ public interface BallTracking {
 	public void trackNext();
 
 	public boolean endOfFiles();
+	
+	public boolean isTracked();
 
 	public Collection<TrackingImage> getAllTrackedImages();
 

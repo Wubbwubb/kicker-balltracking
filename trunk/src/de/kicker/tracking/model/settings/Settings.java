@@ -13,6 +13,9 @@ public final class Settings {
 
 	Properties prop;
 
+	// ##### installation directory #####
+	private String installDir;
+
 	// ##### window settings #####
 	private String windowTitle;
 	private int windowWidth;
@@ -33,6 +36,8 @@ public final class Settings {
 					+ "settings.properties");
 			prop = new Properties();
 			prop.load(fIn);
+
+			setInstallDir(getProperty("install_dir", ""));
 
 			setWindowTitle(getProperty("window_title", "Kicker BallTracking"));
 			setWindowWidth(getIntProperty("window_width", 1200));
@@ -86,6 +91,14 @@ public final class Settings {
 			singleton = new Settings();
 		}
 		return singleton;
+	}
+
+	public String getInstallDir() {
+		return installDir;
+	}
+
+	private void setInstallDir(String installDir) {
+		this.installDir = installDir;
 	}
 
 	public String getWindowTitle() {
