@@ -11,7 +11,11 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import de.kicker.tracking.model.settings.Settings;
+
 public class XMLLayer {
+
+	private static Settings settings = Settings.getInstance();
 
 	public static void main(String[] args) {
 		String dir = "E:\\Praktikum Master\\Bilder";
@@ -30,7 +34,8 @@ public class XMLLayer {
 
 			Element root = new Element("balltracking");
 			Document doc = new Document(root);
-			DocType docType = new DocType("balltracking", "xml/balltracking.dtd");
+			DocType docType = new DocType("balltracking",
+					settings.getInstallDir() + "/xml/balltracking.dtd");
 			doc.setDocType(docType);
 			Attribute dirAtt = new Attribute("directory",
 					ballTracking.getDirectory());

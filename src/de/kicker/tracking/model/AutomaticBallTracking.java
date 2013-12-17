@@ -58,4 +58,9 @@ public class AutomaticBallTracking implements BallTracking {
 		return currentIndex >= files.length;
 	}
 
+	@Override
+	public boolean isTracked() {
+		return getAllTrackedImages().size() >= 2;
+	}
+
 }
