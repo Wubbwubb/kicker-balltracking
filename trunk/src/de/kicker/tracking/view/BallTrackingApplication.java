@@ -40,17 +40,16 @@ import javafx.stage.Stage;
 
 import org.apache.log4j.Logger;
 
-import de.kicker.tracking.model.AutomaticBallTracking;
-import de.kicker.tracking.model.BallTracking;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
 import de.kicker.tracking.model.XMLLayer;
+import de.kicker.tracking.model.balltracking.AutomaticBallTracking;
+import de.kicker.tracking.model.balltracking.AbstractBallTracking;
 import de.kicker.tracking.model.settings.Settings;
 
 public class BallTrackingApplication extends Application {
 
-	private final static Logger logger = Logger
-			.getLogger(BallTrackingApplication.class);
+	private final static Logger logger = Logger.getLogger(BallTrackingApplication.class);
 	private final static Settings settings = Settings.getInstance();
 
 	private AnchorPane imgAnchor;
@@ -59,6 +58,7 @@ public class BallTrackingApplication extends Application {
 	private Button btnNext;
 	private Label lbDirectory;
 	private Label lbFilename;
+	private CheckMenuItem showPath;
 
 	private File directory;
 	private File currentFile;
@@ -67,7 +67,7 @@ public class BallTrackingApplication extends Application {
 
 	private List<Node> pathNodes;
 
-	private BallTracking ballTracking;
+	private AbstractBallTracking ballTracking;
 
 	private Cursor cursor = Cursor.CROSSHAIR;
 
@@ -112,9 +112,6 @@ public class BallTrackingApplication extends Application {
 			public void handle(ActionEvent event) {
 				currentIndex++;
 				refreshImageView();
-				if (ballTracking != null) {
-					ballTracking.trackNext();
-				}
 			}
 
 		});
@@ -164,6 +161,9 @@ public class BallTrackingApplication extends Application {
 		}
 
 		refreshDirectory();
+		if (directory != null) {
+			ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+		}
 
 		imgAnchor.getChildren().add(imgView);
 		imgView.setLayoutX(10);
@@ -222,14 +222,11 @@ public class BallTrackingApplication extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				ballTracking = new AutomaticBallTracking(files, directory
-						.getParent(), currentIndex);
-				while (!ballTracking.endOfFiles()) {
-					ballTracking.trackNext();
-					if (currentIndex < files.length - 1) {
-						currentIndex++;
-					}
+				ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+				for (currentIndex = 0; currentIndex < files.length; currentIndex++) {
+					ballTracking.trackFile(files[currentIndex]);
 				}
+				currentIndex = Math.min(currentIndex, files.length - 1);
 				refreshImageView();
 				logger.info("Start Tracking");
 			}
@@ -241,184 +238,12 @@ public class BallTrackingApplication extends Application {
 		borderPaneMain.setCenter(borderPaneImage);
 		borderPaneMain.setRight(gridPane);
 
-		MenuBar menuBar = new MenuBar();
-
-		Menu menuFile = new Menu("File");
-		Menu menuEdit = new Menu("Edit");
-
-		MenuItem chooseFile = new MenuItem("Open Image");
-		chooseFile.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-
-				String dir = directory == null ? "" : directory
-						.getAbsolutePath();
-				File preDir = new File(dir);
-
-				FileChooser chooser = new FileChooser();
-
-				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
-					chooser.setInitialDirectory(preDir);
-				}
-
-				chooser.setTitle(settings.getFileChooserTitle());
-				ExtensionFilter filter = new ExtensionFilter("image", "*.png",
-						"*.jpg");
-				chooser.getExtensionFilters().add(filter);
-				File selectedFile = chooser.showOpenDialog(primaryStage);
-
-				if (selectedFile == null) {
-					logger.warn("no file chosen");
-				} else {
-					directory = selectedFile.getParentFile();
-					refreshDirectory();
-					currentFile = selectedFile;
-					for (int i = 0; i < files.length; i++) {
-						if (files[i].equals(selectedFile)) {
-							currentIndex = i;
-							break;
-						}
-					}
-					refreshImageView();
-				}
-
-				logger.info("file " + selectedFile + " chosen");
-
-			}
-
-		});
-
-		MenuItem chooseFolder = new MenuItem("Open Folder");
-		chooseFolder.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-
-				String dir = directory == null ? "" : directory
-						.getAbsolutePath();
-				File preDir = new File(dir);
-
-				DirectoryChooser chooser = new DirectoryChooser();
-
-				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
-					chooser.setInitialDirectory(preDir);
-				}
-
-				chooser.setTitle(settings.getDirChooserTitle());
-				File selectedDir = chooser.showDialog(primaryStage);
-
-				if (selectedDir == null) {
-					logger.warn("no directory chosen");
-				} else {
-					directory = selectedDir;
-					refreshDirectory();
-				}
-
-				logger.info("folder " + directory + " chosen");
-
-			}
-
-		});
-
-		MenuItem export2File = new MenuItem("Export");
-		export2File.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-
-				if (ballTracking != null && ballTracking.isTracked()) {
-
-					String dir = directory == null ? "" : directory
-							.getAbsolutePath();
-					File preDir = new File(dir);
-
-					FileChooser chooser = new FileChooser();
-
-					if (preDir != null && preDir.exists()
-							&& preDir.isDirectory()) {
-						chooser.setInitialDirectory(preDir);
-					}
-
-					chooser.setTitle("Save File");
-					ExtensionFilter xmlFilter = new ExtensionFilter("xml",
-							"*.xml");
-					ExtensionFilter allFilter = new ExtensionFilter("all",
-							"*.*");
-					chooser.getExtensionFilters().addAll(xmlFilter, allFilter);
-					File selectedFile = chooser.showSaveDialog(primaryStage);
-
-					if (selectedFile == null) {
-						logger.warn("no file chosen");
-					} else {
-						XMLLayer.export2XML(ballTracking,
-								selectedFile.getAbsolutePath());
-					}
-
-					logger.info("file " + selectedFile + " chosen");
-
-				}
-
-			}
-
-		});
-
-		menuFile.getItems().addAll(chooseFile, chooseFolder,
-				new SeparatorMenuItem(), export2File);
-
-		final CheckMenuItem showPath = new CheckMenuItem("Show Path");
-		showPath.setSelected(false);
-		showPath.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-
-				if (ballTracking != null && showPath.isSelected()) {
-
-					Collection<TrackingImage> images = ballTracking
-							.getAllTrackedImages();
-					for (TrackingImage image : images) {
-
-						Position pos = image.getBall().getPosition();
-						int initX = pos.getX();
-						int initY = pos.getY();
-
-						Circle circle = new Circle(
-								initX + imgView.getLayoutX(), initY
-										+ imgView.getLayoutY(), 2);
-						circle.setFill(null);
-						circle.setStroke(Color.RED);
-						circle.setStrokeWidth(2);
-
-						imgAnchor.getChildren().add(circle);
-						pathNodes.add(circle);
-
-					}
-
-					logger.info("show path true");
-				} else if (!showPath.isSelected()) {
-					for (Node node : pathNodes) {
-						imgAnchor.getChildren().remove(node);
-					}
-					pathNodes = new LinkedList<>();
-					logger.info("show path false");
-				} else {
-					showPath.setSelected(false);
-				}
-
-			}
-
-		});
-
-		menuEdit.getItems().add(showPath);
-
-		menuBar.getMenus().addAll(menuFile, menuEdit);
+		MenuBar menuBar = createMenuBar(primaryStage);
 
 		vboxMain.getChildren().add(menuBar);
 		vboxMain.getChildren().add(borderPaneMain);
 
-		Scene scene = new Scene(vboxMain, settings.getWindowWidth(),
-				settings.getWindowHeight());
+		Scene scene = new Scene(vboxMain, settings.getWindowWidth(), settings.getWindowHeight());
 		scene.getStylesheets().add("css/style.css");
 
 		primaryStage.setScene(scene);
@@ -447,51 +272,239 @@ public class BallTrackingApplication extends Application {
 		primaryStage.show();
 	}
 
-	private void refreshImageView() {
+	private MenuBar createMenuBar(final Stage primaryStage) {
 
-		FileInputStream fIn = null;
+		MenuBar menuBar = new MenuBar();
 
-		try {
+		Menu menuFile = new Menu("File");
+		Menu menuEdit = new Menu("Edit");
+		Menu menuTrack = new Menu("Track");
 
-			fIn = new FileInputStream(files[currentIndex]);
-			currentFile = files[currentIndex];
-			logger.info("changed image to " + directory + File.separator
-					+ files[currentIndex]);
+		MenuItem chooseFile = new MenuItem("Open Image");
+		chooseFile.setOnAction(new EventHandler<ActionEvent>() {
 
-		} catch (Exception e) {
-			try {
-				directory = null;
-				currentFile = new File(settings.getImagePlaceholder());
-				fIn = new FileInputStream(currentFile);
-			} catch (FileNotFoundException e1) {
-				logger.error("File: " + settings.getImagePlaceholder()
-						+ " not found!", e1);
-				currentFile = null;
-			}
-		} finally {
+			@Override
+			public void handle(ActionEvent event) {
 
-			String labelText = directory == null ? "-" : directory
-					.getAbsolutePath();
-			lbDirectory.setText(labelText);
-			labelText = currentFile == null
-					|| settings.getImagePlaceholder().endsWith(
-							currentFile.getName()) ? "-" : currentFile
-					.getName();
-			lbFilename.setText(labelText);
+				String dir = directory == null ? "" : directory.getAbsolutePath();
+				File preDir = new File(dir);
 
-			Image image = new Image(fIn);
-			imgView.setImage(image);
+				FileChooser chooser = new FileChooser();
 
-			checkNavBtns();
-
-			if (fIn != null) {
-				try {
-					fIn.close();
-				} catch (IOException e) {
-					logger.fatal("can not close FileInputStream", e);
+				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+					chooser.setInitialDirectory(preDir);
 				}
+
+				chooser.setTitle(settings.getFileChooserTitle());
+				ExtensionFilter filter = new ExtensionFilter("image", "*.png", "*.jpg");
+				chooser.getExtensionFilters().add(filter);
+				File selectedFile = chooser.showOpenDialog(primaryStage);
+
+				if (selectedFile == null) {
+					logger.warn("no file chosen");
+				} else {
+					directory = selectedFile.getParentFile();
+					refreshDirectory();
+					ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+					currentFile = selectedFile;
+					for (int i = 0; i < files.length; i++) {
+						if (files[i].equals(selectedFile)) {
+							currentIndex = i;
+							break;
+						}
+					}
+					refreshImageView();
+				}
+
+				logger.info("file " + selectedFile + " chosen");
+
 			}
+
+		});
+
+		MenuItem chooseFolder = new MenuItem("Open Folder");
+		chooseFolder.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				String dir = directory == null ? "" : directory.getAbsolutePath();
+				File preDir = new File(dir);
+
+				DirectoryChooser chooser = new DirectoryChooser();
+
+				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+					chooser.setInitialDirectory(preDir);
+				}
+
+				chooser.setTitle(settings.getDirChooserTitle());
+				File selectedDir = chooser.showDialog(primaryStage);
+
+				if (selectedDir == null) {
+					logger.warn("no directory chosen");
+				} else {
+					directory = selectedDir;
+					refreshDirectory();
+					ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+				}
+
+				logger.info("folder " + directory + " chosen");
+
+			}
+
+		});
+
+		MenuItem importFromFile = new MenuItem("Import");
+		importFromFile.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				String dir = directory == null ? "" : directory.getAbsolutePath();
+				File preDir = new File(dir);
+
+				FileChooser chooser = new FileChooser();
+
+				if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+					chooser.setInitialDirectory(preDir);
+				}
+
+				chooser.setTitle("Open File");
+				ExtensionFilter xmlFilter = new ExtensionFilter("xml", "*.xml");
+				chooser.getExtensionFilters().addAll(xmlFilter);
+				File selectedFile = chooser.showOpenDialog(primaryStage);
+
+				if (selectedFile == null) {
+					logger.warn("no file chosen");
+				} else {
+					ballTracking = XMLLayer.readAutomaticBallTracking(selectedFile);
+					directory = new File(ballTracking.getDirectory());
+					refreshDirectory();
+				}
+
+				logger.info("file " + selectedFile + " chosen");
+
+			}
+
+		});
+
+		MenuItem export2File = new MenuItem("Export");
+		export2File.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				if (ballTracking != null && ballTracking.getAllTrackedImages().size() > 0) {
+
+					String dir = directory == null ? "" : directory.getAbsolutePath();
+					File preDir = new File(dir);
+
+					FileChooser chooser = new FileChooser();
+
+					if (preDir != null && preDir.exists() && preDir.isDirectory()) {
+						chooser.setInitialDirectory(preDir);
+					}
+
+					chooser.setTitle("Save File");
+					ExtensionFilter xmlFilter = new ExtensionFilter("xml", "*.xml");
+					ExtensionFilter allFilter = new ExtensionFilter("all", "*.*");
+					chooser.getExtensionFilters().addAll(xmlFilter, allFilter);
+					File selectedFile = chooser.showSaveDialog(primaryStage);
+
+					if (selectedFile == null) {
+						logger.warn("no file chosen");
+					} else {
+						XMLLayer.export2XML(ballTracking, selectedFile.getAbsolutePath());
+					}
+
+					logger.info("file " + selectedFile + " chosen");
+
+				}
+
+			}
+
+		});
+
+		menuFile.getItems().addAll(chooseFile, chooseFolder, new SeparatorMenuItem(),
+				importFromFile, export2File);
+
+		showPath = new CheckMenuItem("Show Path");
+		showPath.setSelected(false);
+		showPath.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				if (ballTracking != null && showPath.isSelected()) {
+
+					Collection<TrackingImage> images = ballTracking.getAllTrackedImages();
+					for (TrackingImage image : images) {
+						addMarker(image);
+					}
+
+					logger.info("show path true");
+				} else if (!showPath.isSelected()) {
+					removeMarkers();
+					logger.info("show path false");
+				} else {
+					showPath.setSelected(false);
+				}
+
+			}
+
+		});
+
+		menuEdit.getItems().add(showPath);
+
+		MenuItem trackAll = new MenuItem("Track All");
+		trackAll.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				if (ballTracking != null) {
+					for (currentIndex = 0; currentIndex < files.length; currentIndex++) {
+						ballTracking.trackFile(files[currentIndex]);
+					}
+					currentIndex = Math.min(currentIndex, files.length - 1);
+					refreshImageView();
+				}
+
+			}
+
+		});
+
+		menuTrack.getItems().add(trackAll);
+
+		menuBar.getMenus().addAll(menuFile, menuEdit, menuTrack);
+
+		return menuBar;
+	}
+
+	private void addMarker(TrackingImage image) {
+
+		Position pos = image.getBall().getPosition();
+		int initX = pos.getX();
+		int initY = pos.getY();
+
+		Circle circle = new Circle(initX + imgView.getLayoutX(), initY + imgView.getLayoutY(), 4);
+		circle.setFill(Color.WHITE);
+		circle.setStroke(Color.RED);
+		circle.setStrokeWidth(3);
+
+		imgAnchor.getChildren().add(circle);
+		pathNodes.add(circle);
+
+	}
+
+	private void removeMarkers() {
+
+		for (Node node : pathNodes) {
+			imgAnchor.getChildren().remove(node);
 		}
+		pathNodes = new LinkedList<>();
+		showPath.setSelected(false);
+
 	}
 
 	private void checkNavBtns() {
@@ -515,8 +528,7 @@ public class BallTrackingApplication extends Application {
 
 			currentIndex = 0;
 
-			String dirString = directory == null ? "" : directory
-					.getAbsolutePath();
+			String dirString = directory == null ? "" : directory.getAbsolutePath();
 			File dirFile = new File(dirString);
 
 			files = dirFile.listFiles();
@@ -534,19 +546,16 @@ public class BallTrackingApplication extends Application {
 				currentFile = new File(settings.getImagePlaceholder());
 				fIn = new FileInputStream(currentFile);
 			} catch (FileNotFoundException e1) {
-				logger.error("File: " + settings.getImagePlaceholder()
-						+ " not found!", e1);
+				logger.error("File: " + settings.getImagePlaceholder() + " not found!", e1);
 				currentFile = null;
 			}
 		} finally {
 
-			String labelText = directory == null ? "-" : directory
-					.getAbsolutePath();
+			String labelText = directory == null ? "-" : directory.getAbsolutePath();
 			lbDirectory.setText(labelText);
 			labelText = currentFile == null
-					|| settings.getImagePlaceholder().endsWith(
-							currentFile.getName()) ? "-" : currentFile
-					.getName();
+					|| settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
+					: currentFile.getName();
 			lbFilename.setText(labelText);
 
 			checkNavBtns();
@@ -564,6 +573,58 @@ public class BallTrackingApplication extends Application {
 			}
 		}
 
+	}
+
+	private void refreshImageView() {
+
+		FileInputStream fIn = null;
+
+		try {
+
+			currentFile = files[currentIndex];
+			fIn = new FileInputStream(currentFile);
+			logger.info("changed image to " + directory + File.separator + files[currentIndex]);
+
+		} catch (Exception e) {
+			try {
+				directory = null;
+				currentFile = new File(settings.getImagePlaceholder());
+				fIn = new FileInputStream(currentFile);
+			} catch (FileNotFoundException e1) {
+				logger.error("File: " + settings.getImagePlaceholder() + " not found!", e1);
+				currentFile = null;
+			}
+		} finally {
+
+			String labelText = directory == null ? "-" : directory.getAbsolutePath();
+			lbDirectory.setText(labelText);
+			labelText = currentFile == null
+					|| settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
+					: currentFile.getName();
+			lbFilename.setText(labelText);
+
+			removeMarkers();
+
+			Image image = new Image(fIn, 640, 480, true, true);
+			imgView.setImage(image);
+
+			if (ballTracking != null) {
+				TrackingImage trImage = ballTracking.getTrackingImage(currentFile);
+				if (trImage != null) {
+					addMarker(trImage);
+				}
+			}
+
+			checkNavBtns();
+
+			if (fIn != null) {
+				try {
+					fIn.close();
+				} catch (IOException e) {
+					logger.fatal("can not close FileInputStream", e);
+				}
+			}
+		}
 	}
 
 }
