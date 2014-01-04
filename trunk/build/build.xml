@@ -42,6 +42,6 @@
         <copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images"/>
         <copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images"/>
     	
-        <copy file="${src_dir}/xml/docType.dtd" todir="${dest_dir}/xml"/>
+        <copy file="${src_dir}/xml/balltracking.dtd" todir="${dest_dir}/xml"/>
     </target>
 </project>
