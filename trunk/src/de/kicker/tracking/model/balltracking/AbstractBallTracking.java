@@ -6,20 +6,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.TrackingImage;
 
 public abstract class AbstractBallTracking {
 
-	protected String directory;
-
 	protected Map<File, TrackingImage> trackedImages;
 
-	protected AbstractBallTracking(String directory) {
-		this(directory, new HashMap<File, TrackingImage>());
+	protected AbstractBallTracking() {
+		this(new HashMap<File, TrackingImage>());
 	}
 
-	protected AbstractBallTracking(String directory, Map<File, TrackingImage> trackedImages) {
-		this.directory = directory;
+	protected AbstractBallTracking(Map<File, TrackingImage> trackedImages) {
 		this.trackedImages = trackedImages;
 	}
 
@@ -31,18 +29,13 @@ public abstract class AbstractBallTracking {
 		return images;
 	}
 
-	public String getDirectory() {
-		return directory;
-	}
-
-	public void setDirectory(String directory) {
-		this.directory = directory;
-	}
-
 	public TrackingImage getTrackingImage(File file) {
 		return trackedImages.get(file);
 	}
 
-	public abstract void trackFile(File file);
+	public void assignBallToFile(File file, Ball ball) {
+		TrackingImage image = new TrackingImage(file, ball);
+		trackedImages.put(file, image);
+	}
 
 }

@@ -1,16 +1,20 @@
 package de.kicker.tracking.model.balltracking;
 
 import java.io.File;
+import java.util.Map;
 
+import de.kicker.tracking.model.TrackingImage;
+import de.kicker.tracking.model.xml.XMLType;
+
+@XMLType(type = "manual")
 public class ManualBallTracking extends AbstractBallTracking {
 
-	public ManualBallTracking(String directory) {
-		super(directory);
+	public ManualBallTracking() {
+		super();
 	}
 
-	@Override
-	public void trackFile(File file) {
-		
+	public ManualBallTracking(Map<File, TrackingImage> trackedImages) {
+		super(trackedImages);
 	}
 
 }

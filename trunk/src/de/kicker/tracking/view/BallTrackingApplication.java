@@ -25,6 +25,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -40,11 +42,10 @@ import javafx.stage.Stage;
 
 import org.apache.log4j.Logger;
 
+import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
-import de.kicker.tracking.model.XMLLayer;
-import de.kicker.tracking.model.balltracking.AutomaticBallTracking;
-import de.kicker.tracking.model.balltracking.AbstractBallTracking;
+import de.kicker.tracking.model.balltracking.TrackingFactory;
 import de.kicker.tracking.model.settings.Settings;
 
 public class BallTrackingApplication extends Application {
@@ -56,9 +57,13 @@ public class BallTrackingApplication extends Application {
 	private ImageView imgView;
 	private Button btnPrev;
 	private Button btnNext;
+	private KeyCombination prevCombination = KeyCombination.keyCombination("F3");
+	private KeyCombination nextCombination = KeyCombination.keyCombination("F4");
+	private Button btnColor;
 	private Label lbDirectory;
 	private Label lbFilename;
 	private CheckMenuItem showPath;
+	private MenuItem initializeTracking;
 
 	private File directory;
 	private File currentFile;
@@ -66,10 +71,9 @@ public class BallTrackingApplication extends Application {
 	private int currentIndex = 0;
 
 	private List<Node> pathNodes;
+	private Node manualCircle;
 
-	private AbstractBallTracking ballTracking;
-
-	private Cursor cursor = Cursor.CROSSHAIR;
+	private TrackingFactory tracking;
 
 	public static void main(String[] args) {
 		logger.info("Start Application");
@@ -97,8 +101,10 @@ public class BallTrackingApplication extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				currentIndex--;
-				refreshImageView();
+				if (currentIndex > 0) {
+					currentIndex--;
+					refreshImageView();
+				}
 			}
 
 		});
@@ -110,8 +116,10 @@ public class BallTrackingApplication extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				currentIndex++;
-				refreshImageView();
+				if (currentIndex < files.length - 1) {
+					currentIndex++;
+					refreshImageView();
+				}
 			}
 
 		});
@@ -162,32 +170,12 @@ public class BallTrackingApplication extends Application {
 
 		refreshDirectory();
 		if (directory != null) {
-			ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+			tracking = new TrackingFactory(directory.getAbsolutePath(), null);
 		}
 
 		imgAnchor.getChildren().add(imgView);
 		imgView.setLayoutX(10);
 		imgView.setLayoutY(10);
-
-		imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-			@Override
-			public void handle(MouseEvent event) {
-
-				double initX = event.getX();
-				double initY = event.getY();
-
-				Circle circle = new Circle(initX, initY, 10);
-				circle.setFill(null);
-				circle.setStroke(Color.RED);
-				circle.setStrokeWidth(2);
-
-				imgAnchor.getChildren().add(circle);
-				logger.info("x: " + initX + "  /  y: " + initY);
-
-			}
-
-		});
 
 		borderPaneImage.setCenter(imgAnchor);
 		borderPaneImage.setLeft(vboxLeft);
@@ -197,43 +185,46 @@ public class BallTrackingApplication extends Application {
 
 		borderPaneImage.setMaxSize(width, height);
 
-		Button btnCursor = new Button();
-		btnCursor.setText("change cursor");
-		btnCursor.setOnAction(new EventHandler<ActionEvent>() {
+		btnColor = new Button();
+		btnColor.setText("Select Ball Color");
+		btnColor.setDisable(true);
+		btnColor.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				logger.info("cursor change");
-				imgView.setCursor(cursor);
-				if (cursor.equals(Cursor.DEFAULT)) {
-					cursor = Cursor.CROSSHAIR;
-				} else {
-					cursor = Cursor.DEFAULT;
-				}
+				imgView.setCursor(Cursor.CROSSHAIR);
+				imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+					@Override
+					public void handle(MouseEvent event) {
+
+						double initX = event.getX();
+						double initY = event.getY();
+
+						PixelReader pixelReader = imgView.getImage().getPixelReader();
+						Color color = pixelReader.getColor((int) (initX - imgView.getLayoutX()),
+								(int) (initY - imgView.getLayoutY()));
+
+						System.out.println(color);
+
+						if (tracking != null) {
+							tracking.getBallShape().setColor(color);
+						}
+
+						logger.info("x: " + initX + "  /  y: " + initY);
+
+						imgAnchor.setOnMouseClicked(null);
+
+						imgView.setCursor(Cursor.DEFAULT);
+
+					}
+
+				});
 			}
 
 		});
 
-		gridPane.add(btnCursor, 0, 0);
-
-		Button btnStartTracking = new Button();
-		btnStartTracking.setText("Start Tracking");
-		btnStartTracking.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
-				for (currentIndex = 0; currentIndex < files.length; currentIndex++) {
-					ballTracking.trackFile(files[currentIndex]);
-				}
-				currentIndex = Math.min(currentIndex, files.length - 1);
-				refreshImageView();
-				logger.info("Start Tracking");
-			}
-
-		});
-
-		gridPane.add(btnStartTracking, 0, 1);
+		gridPane.add(btnColor, 0, 0);
 
 		borderPaneMain.setCenter(borderPaneImage);
 		borderPaneMain.setRight(gridPane);
@@ -245,6 +236,19 @@ public class BallTrackingApplication extends Application {
 
 		Scene scene = new Scene(vboxMain, settings.getWindowWidth(), settings.getWindowHeight());
 		scene.getStylesheets().add("css/style.css");
+
+		scene.getAccelerators().put(prevCombination, new Runnable() {
+			@Override
+			public void run() {
+				btnPrev.fire();
+			}
+		});
+		scene.getAccelerators().put(nextCombination, new Runnable() {
+			@Override
+			public void run() {
+				btnNext.fire();
+			}
+		});
 
 		primaryStage.setScene(scene);
 
@@ -303,9 +307,12 @@ public class BallTrackingApplication extends Application {
 				if (selectedFile == null) {
 					logger.warn("no file chosen");
 				} else {
-					directory = selectedFile.getParentFile();
-					refreshDirectory();
-					ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+					logger.info("file " + selectedFile + " chosen");
+					if (!selectedFile.getParentFile().equals(directory)) {
+						directory = selectedFile.getParentFile();
+						refreshDirectory();
+						createTracking(directory.getAbsolutePath());
+					}
 					currentFile = selectedFile;
 					for (int i = 0; i < files.length; i++) {
 						if (files[i].equals(selectedFile)) {
@@ -315,8 +322,6 @@ public class BallTrackingApplication extends Application {
 					}
 					refreshImageView();
 				}
-
-				logger.info("file " + selectedFile + " chosen");
 
 			}
 
@@ -343,12 +348,11 @@ public class BallTrackingApplication extends Application {
 				if (selectedDir == null) {
 					logger.warn("no directory chosen");
 				} else {
+					logger.info("folder " + directory + " chosen");
 					directory = selectedDir;
 					refreshDirectory();
-					ballTracking = new AutomaticBallTracking(directory.getAbsolutePath());
+					createTracking(directory.getAbsolutePath());
 				}
-
-				logger.info("folder " + directory + " chosen");
 
 			}
 
@@ -375,26 +379,28 @@ public class BallTrackingApplication extends Application {
 				File selectedFile = chooser.showOpenDialog(primaryStage);
 
 				if (selectedFile == null) {
-					logger.warn("no file chosen");
+					logger.warn("no file chosen for import");
 				} else {
-					ballTracking = XMLLayer.readAutomaticBallTracking(selectedFile);
-					directory = new File(ballTracking.getDirectory());
+					logger.info("file " + selectedFile + " chosen for import");
+					tracking = TrackingFactory.importFromXML(selectedFile);
+					initializeTracking.setDisable(false);
+					directory = new File(tracking.getDirectory());
 					refreshDirectory();
 				}
-
-				logger.info("file " + selectedFile + " chosen");
 
 			}
 
 		});
 
-		MenuItem export2File = new MenuItem("Export");
-		export2File.setOnAction(new EventHandler<ActionEvent>() {
+		MenuItem exportToFile = new MenuItem("Export");
+		exportToFile.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
 
-				if (ballTracking != null && ballTracking.getAllTrackedImages().size() > 0) {
+				if (tracking != null
+						&& (tracking.autoBallTracking.getAllTrackedImages().size() > 0 || tracking.manualBallTracking
+								.getAllTrackedImages().size() > 0)) {
 
 					String dir = directory == null ? "" : directory.getAbsolutePath();
 					File preDir = new File(dir);
@@ -412,12 +418,11 @@ public class BallTrackingApplication extends Application {
 					File selectedFile = chooser.showSaveDialog(primaryStage);
 
 					if (selectedFile == null) {
-						logger.warn("no file chosen");
+						logger.warn("no file chosen for export");
 					} else {
-						XMLLayer.export2XML(ballTracking, selectedFile.getAbsolutePath());
+						logger.info("file " + selectedFile + " chosen for export");
+						tracking.exportToXML(selectedFile);
 					}
-
-					logger.info("file " + selectedFile + " chosen");
 
 				}
 
@@ -425,21 +430,24 @@ public class BallTrackingApplication extends Application {
 
 		});
 
-		menuFile.getItems().addAll(chooseFile, chooseFolder, new SeparatorMenuItem(),
-				importFromFile, export2File);
+		menuFile.getItems().addAll(chooseFile, chooseFolder, new SeparatorMenuItem(), importFromFile, exportToFile);
 
 		showPath = new CheckMenuItem("Show Path");
 		showPath.setSelected(false);
+		showPath.setDisable(true);
 		showPath.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-
-				if (ballTracking != null && showPath.isSelected()) {
-
-					Collection<TrackingImage> images = ballTracking.getAllTrackedImages();
+				if (tracking != null && showPath.isSelected()) {
+					Collection<TrackingImage> images = tracking.autoBallTracking.getAllTrackedImages();
 					for (TrackingImage image : images) {
-						addMarker(image);
+						addMarker(image, Color.RED, Color.WHITE);
+					}
+
+					images = tracking.manualBallTracking.getAllTrackedImages();
+					for (TrackingImage image : images) {
+						addMarker(image, Color.BLUE, Color.WHITE);
 					}
 
 					logger.info("show path true");
@@ -449,48 +457,185 @@ public class BallTrackingApplication extends Application {
 				} else {
 					showPath.setSelected(false);
 				}
-
 			}
-
 		});
 
 		menuEdit.getItems().add(showPath);
 
-		MenuItem trackAll = new MenuItem("Track All");
-		trackAll.setOnAction(new EventHandler<ActionEvent>() {
-
+		final MenuItem trackNext = new MenuItem("Track Next");
+		trackNext.setDisable(true);
+		trackNext.setAccelerator(KeyCombination.keyCombination("F6"));
+		trackNext.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-
-				if (ballTracking != null) {
-					for (currentIndex = 0; currentIndex < files.length; currentIndex++) {
-						ballTracking.trackFile(files[currentIndex]);
+				if (tracking != null) {
+					if (currentIndex >= 0 && currentIndex < files.length - 1) {
+						tracking.trackAuto(files[++currentIndex]);
 					}
-					currentIndex = Math.min(currentIndex, files.length - 1);
 					refreshImageView();
 				}
-
 			}
-
 		});
 
-		menuTrack.getItems().add(trackAll);
+		final MenuItem trackAll = new MenuItem("Track All");
+		trackAll.setDisable(true);
+		trackAll.setAccelerator(KeyCombination.keyCombination("F8"));
+		trackAll.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				if (tracking != null) {
+					for (currentIndex = 0; currentIndex < files.length - 1;) {
+						tracking.trackAuto(files[++currentIndex]);
+					}
+					refreshImageView();
+				}
+			}
+		});
+
+		final MenuItem trackManual = new MenuItem("Track Manual");
+		trackManual.setDisable(true);
+		trackManual.setAccelerator(KeyCombination.keyCombination("F5"));
+		trackManual.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				removeManualCircle();
+				imgView.setCursor(Cursor.CROSSHAIR);
+				imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+
+						double initX = event.getX();
+						double initY = event.getY();
+
+						int posX = (int) (initX - imgView.getLayoutX());
+						int posY = (int) (initY - imgView.getLayoutY());
+						Position pos = new Position(posX, posY);
+
+						int radius = 6;
+
+						Circle circle = new Circle(initX, initY, radius);
+						circle.setFill(null);
+						circle.setStroke(Color.BLUE);
+						circle.setStrokeWidth(1);
+
+						tracking.trackManual(currentFile, pos);
+
+						TrackingImage img = tracking.manualBallTracking.getTrackingImage(currentFile);
+						if (img != null) {
+							addMarker(img, Color.BLUE, Color.WHITE);
+						} else {
+							manualCircle = circle;
+							imgAnchor.getChildren().add(manualCircle);
+						}
+
+						logger.info("x: " + posX + "  /  y: " + posY);
+
+						imgAnchor.setOnMouseClicked(null);
+
+						imgView.setCursor(Cursor.DEFAULT);
+
+					}
+
+				});
+
+				logger.info("Track Manual. File: " + currentFile.getName());
+			}
+		});
+
+		final MenuItem fixBallShape = new MenuItem("Finish Init");
+		fixBallShape.setDisable(true);
+		fixBallShape.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				initializeTracking.setDisable(true);
+				btnColor.setDisable(true);
+				fixBallShape.setDisable(true);
+				trackNext.setDisable(false);
+				trackAll.setDisable(false);
+				trackManual.setDisable(false);
+				logger.info("Initializing BallTracking finished");
+			}
+		});
+
+		initializeTracking = new MenuItem("Init Tracking");
+		initializeTracking.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				removeManualCircle();
+				imgView.setCursor(Cursor.CROSSHAIR);
+				imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+
+						double initX = event.getX();
+						double initY = event.getY();
+
+						int posX = (int) (initX - imgView.getLayoutX());
+						int posY = (int) (initY - imgView.getLayoutY());
+						Position pos = new Position(posX, posY);
+
+						int radius = 6;
+
+						Circle circle = new Circle(initX, initY, radius);
+						circle.setFill(null);
+						circle.setStroke(Color.RED);
+						circle.setStrokeWidth(1);
+
+						PixelReader pixelReader = imgView.getImage().getPixelReader();
+						Color color = pixelReader.getColor(posX, posY);
+
+						System.out.println(color);
+
+						BallShape ballShape = new BallShape(radius, color);
+
+						if (tracking != null) {
+							tracking.setBallShape(ballShape);
+							tracking.initTracking(currentFile, pos);
+							showPath.setDisable(false);
+							btnColor.setDisable(false);
+							fixBallShape.setDisable(false);
+						} else {
+							logger.warn("TrackingFactory is null! BallShape could not be assigned.");
+						}
+
+						manualCircle = circle;
+						imgAnchor.getChildren().add(manualCircle);
+
+						logger.info("x: " + posX + "  /  y: " + posY);
+
+						imgAnchor.setOnMouseClicked(null);
+
+						imgView.setCursor(Cursor.DEFAULT);
+
+					}
+
+				});
+			}
+		});
+
+		if (tracking == null) {
+			initializeTracking.setDisable(true);
+		}
+
+		menuTrack.getItems().addAll(initializeTracking, fixBallShape, new SeparatorMenuItem(), trackManual,
+				new SeparatorMenuItem(), trackNext, trackAll);
 
 		menuBar.getMenus().addAll(menuFile, menuEdit, menuTrack);
 
 		return menuBar;
 	}
 
-	private void addMarker(TrackingImage image) {
+	private void addMarker(TrackingImage image, Color colorBorder, Color colorFill) {
 
 		Position pos = image.getBall().getPosition();
 		int initX = pos.getX();
 		int initY = pos.getY();
 
-		Circle circle = new Circle(initX + imgView.getLayoutX(), initY + imgView.getLayoutY(), 4);
-		circle.setFill(Color.WHITE);
-		circle.setStroke(Color.RED);
-		circle.setStrokeWidth(3);
+		Circle circle = new Circle(initX + imgView.getLayoutX(), initY + imgView.getLayoutY(), image.getBall()
+				.getBallShape().getRadius());
+		circle.setFill(null);
+		circle.setStroke(colorBorder);
+		circle.setStrokeWidth(2);
 
 		imgAnchor.getChildren().add(circle);
 		pathNodes.add(circle);
@@ -553,16 +698,19 @@ public class BallTrackingApplication extends Application {
 
 			String labelText = directory == null ? "-" : directory.getAbsolutePath();
 			lbDirectory.setText(labelText);
-			labelText = currentFile == null
-					|| settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
+			labelText = currentFile == null || settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
 					: currentFile.getName();
 			lbFilename.setText(labelText);
 
 			checkNavBtns();
 
+			removeManualCircle();
+
 			Image image = new Image(fIn);
 
 			imgView.setImage(image);
+
+			setMarker();
 
 			if (fIn != null) {
 				try {
@@ -598,24 +746,20 @@ public class BallTrackingApplication extends Application {
 
 			String labelText = directory == null ? "-" : directory.getAbsolutePath();
 			lbDirectory.setText(labelText);
-			labelText = currentFile == null
-					|| settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
+			labelText = currentFile == null || settings.getImagePlaceholder().endsWith(currentFile.getName()) ? "-"
 					: currentFile.getName();
 			lbFilename.setText(labelText);
 
 			removeMarkers();
 
+			removeManualCircle();
+
 			Image image = new Image(fIn, 640, 480, true, true);
 			imgView.setImage(image);
 
-			if (ballTracking != null) {
-				TrackingImage trImage = ballTracking.getTrackingImage(currentFile);
-				if (trImage != null) {
-					addMarker(trImage);
-				}
-			}
-
 			checkNavBtns();
+
+			setMarker();
 
 			if (fIn != null) {
 				try {
@@ -625,6 +769,31 @@ public class BallTrackingApplication extends Application {
 				}
 			}
 		}
+	}
+
+	private void setMarker() {
+		if (tracking != null) {
+			TrackingImage atrImage = tracking.autoBallTracking.getTrackingImage(currentFile);
+			if (atrImage != null) {
+				addMarker(atrImage, Color.RED, Color.WHITE);
+			}
+			TrackingImage mtrImage = tracking.manualBallTracking.getTrackingImage(currentFile);
+			if (mtrImage != null) {
+				addMarker(mtrImage, Color.BLUE, Color.WHITE);
+			}
+		}
+	}
+
+	private void removeManualCircle() {
+		if (manualCircle != null) {
+			imgAnchor.getChildren().remove(manualCircle);
+			manualCircle = null;
+		}
+	}
+
+	private void createTracking(String directory) {
+		tracking = new TrackingFactory(directory, null);
+		initializeTracking.setDisable(false);
 	}
 
 }
