@@ -3,6 +3,7 @@ package de.kicker.tracking.view;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,8 +99,6 @@ public class BallTrackingApplication extends Application {
 
 		gridPane = new GridPane();
 		gridPane.setId("gridPane");
-		gridPane.setHgap(10);
-		gridPane.setVgap(10);
 
 		btnPrev = new Button();
 		btnPrev.setText("prev");
@@ -131,8 +130,8 @@ public class BallTrackingApplication extends Application {
 		});
 		btnNext.setPrefWidth(50);
 
-		int width = 780;
-		int height = 515;
+		int width = settings.getImageWidth() + 140;
+		int height = settings.getImageHeight() + 35;
 
 		VBox vboxLeft = FXUtil.getVBox(50, height, 0);
 		VBox vboxRight = FXUtil.getVBox(50, height, 0);
@@ -273,8 +272,8 @@ public class BallTrackingApplication extends Application {
 
 		primaryStage.setScene(scene);
 
-		primaryStage.setWidth(settings.getWindowWidth());
-		primaryStage.setHeight(settings.getWindowHeight());
+		primaryStage.setWidth(Math.max(settings.getWindowWidth(), settings.getImageWidth() + 350));
+		primaryStage.setHeight(Math.max(settings.getWindowHeight(), settings.getImageHeight() + 162));
 		primaryStage.setTitle(settings.getWindowTitle());
 
 		FileInputStream fIn = null;
@@ -532,7 +531,7 @@ public class BallTrackingApplication extends Application {
 						int posY = (int) (initY - imgView.getLayoutY());
 						Position pos = new Position(posX, posY);
 
-						int radius = 6;
+						int radius = settings.getBallRadius();
 
 						Circle circle = new Circle(initX, initY, radius);
 						circle.setFill(null);
@@ -597,7 +596,7 @@ public class BallTrackingApplication extends Application {
 						int posY = (int) (initY - imgView.getLayoutY());
 						Position pos = new Position(posX, posY);
 
-						int radius = 6;
+						int radius = settings.getBallRadius();
 
 						Circle circle = new Circle(initX, initY, radius);
 						circle.setFill(null);
@@ -701,7 +700,13 @@ public class BallTrackingApplication extends Application {
 			String dirString = directory == null ? "" : directory.getAbsolutePath();
 			File dirFile = new File(dirString);
 
-			files = dirFile.listFiles();
+			files = dirFile.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					String lcName = name.toLowerCase();
+					return lcName.endsWith(".png") || lcName.endsWith(".jpg");
+				}
+			});
 			if (files == null) {
 				files = new File[0];
 			}
@@ -731,7 +736,7 @@ public class BallTrackingApplication extends Application {
 
 			removeManualCircle();
 
-			Image image = new Image(fIn, 640, 480, true, true);
+			Image image = new Image(fIn, settings.getImageWidth(), settings.getImageHeight(), true, true);
 
 			imgView.setImage(image);
 
@@ -779,7 +784,7 @@ public class BallTrackingApplication extends Application {
 
 			removeManualCircle();
 
-			Image image = new Image(fIn, 640, 480, true, true);
+			Image image = new Image(fIn, settings.getImageWidth(), settings.getImageHeight(), true, true);
 			imgView.setImage(image);
 
 			checkNavBtns();

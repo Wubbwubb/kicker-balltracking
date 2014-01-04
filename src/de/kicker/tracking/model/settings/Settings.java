@@ -25,15 +25,18 @@ public final class Settings {
 	// ##### image settings #####
 	private String imageDir;
 	private String imagePlaceholder;
+	private int imageWidth;
+	private int imageHeight;
 
 	private String dirChooserTitle;
 	private String fileChooserTitle;
 
+	private int ballRadius;
+
 	private Settings() {
 		InputStream fIn = null;
 		try {
-			fIn = new FileInputStream("properties" + File.separator
-					+ "settings.properties");
+			fIn = new FileInputStream("properties" + File.separator + "settings.properties");
 			prop = new Properties();
 			prop.load(fIn);
 
@@ -42,14 +45,17 @@ public final class Settings {
 			setWindowTitle(getProperty("window_title", "Kicker BallTracking"));
 			setWindowWidth(getIntProperty("window_width", 1200));
 			setWindowHeight(getIntProperty("window_height", 900));
+			setWindowIcon(getProperty("window_icon", "images/icon.png"));
 
 			setImageDir(getProperty("image_dir", "E:\\Praktikum Master\\Bilder"));
-			setImagePlaceholder(getProperty("image_placeholder",
-					"images/img_placeholder"));
-			setDirChooserTitle(getProperty("folderchooser_title",
-					"Choose Folder"));
+			setImagePlaceholder(getProperty("image_placeholder", "images/img_placeholder"));
+			setImageWidth(getIntProperty("image_width", 640));
+			setImageHeight(getIntProperty("image_height", 480));
+
+			setDirChooserTitle(getProperty("folderchooser_title", "Choose Folder"));
 			setFileChooserTitle(getProperty("filechooser_title", "Choose Image"));
-			setWindowIcon(getProperty("window_icon", "images/icon.png"));
+
+			setBallRadius(getIntProperty("ball_radius", 6));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -165,6 +171,30 @@ public final class Settings {
 
 	private void setFileChooserTitle(String fileChooserTitle) {
 		this.fileChooserTitle = fileChooserTitle;
+	}
+
+	public int getImageWidth() {
+		return imageWidth;
+	}
+
+	private void setImageWidth(int imageWidth) {
+		this.imageWidth = imageWidth;
+	}
+
+	public int getImageHeight() {
+		return imageHeight;
+	}
+
+	private void setImageHeight(int imageHeight) {
+		this.imageHeight = imageHeight;
+	}
+
+	public int getBallRadius() {
+		return ballRadius;
+	}
+
+	private void setBallRadius(int ballRadius) {
+		this.ballRadius = ballRadius;
 	}
 
 }

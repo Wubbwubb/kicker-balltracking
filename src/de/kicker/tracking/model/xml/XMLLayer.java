@@ -54,6 +54,7 @@ public class XMLLayer {
 
 			Element root = new Element("balltracking");
 			Document doc = new Document(root);
+			// TODO: DTD-validation uncomment
 			@SuppressWarnings("unused")
 			DocType docType = new DocType("balltracking", settings.getInstallDir() + "/xml/balltracking.dtd");
 			// doc.setDocType(docType);
@@ -150,6 +151,8 @@ public class XMLLayer {
 
 	public static TrackingFactory readBallTracking(File xmlFile) {
 
+		// TODO: choose the SAXBuilder with DTD-validation
+		// SAXBuilder builder = new SAXBuilder(XMLReaders.DTDVALIDATING);
 		SAXBuilder builder = new SAXBuilder();
 
 		TrackingFactory factory = null;
