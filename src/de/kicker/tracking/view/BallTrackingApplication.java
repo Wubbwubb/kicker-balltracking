@@ -574,6 +574,8 @@ public class BallTrackingApplication extends Application {
 				trackNext.setDisable(false);
 				trackAll.setDisable(false);
 				trackManual.setDisable(false);
+				removeManualCircle();
+				setMarker();
 				logger.info("Initializing BallTracking finished");
 			}
 		});
