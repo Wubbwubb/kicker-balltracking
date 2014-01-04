@@ -35,6 +35,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -53,6 +54,9 @@ public class BallTrackingApplication extends Application {
 	private final static Logger logger = Logger.getLogger(BallTrackingApplication.class);
 	private final static Settings settings = Settings.getInstance();
 
+	private BorderPane borderPaneMain;
+	private GridPane gridPane;
+	private Rectangle colorIndicator;
 	private AnchorPane imgAnchor;
 	private ImageView imgView;
 	private Button btnPrev;
@@ -86,14 +90,16 @@ public class BallTrackingApplication extends Application {
 		pathNodes = new LinkedList<>();
 
 		VBox vboxMain = FXUtil.getVBox(-1, -1, -1);
-		BorderPane borderPaneMain = new BorderPane();
+		borderPaneMain = new BorderPane();
 		borderPaneMain.setId("borderPaneMain");
 
 		BorderPane borderPaneImage = new BorderPane();
 		borderPaneImage.setId("borderPaneImage");
 
-		GridPane gridPane = new GridPane();
+		gridPane = new GridPane();
 		gridPane.setId("gridPane");
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
 
 		btnPrev = new Button();
 		btnPrev.setText("prev");
@@ -209,6 +215,7 @@ public class BallTrackingApplication extends Application {
 
 						if (tracking != null) {
 							tracking.getBallShape().setColor(color);
+							colorIndicator.setFill(color);
 						}
 
 						logger.info("x: " + initX + "  /  y: " + initY);
@@ -225,6 +232,20 @@ public class BallTrackingApplication extends Application {
 		});
 
 		gridPane.add(btnColor, 0, 0);
+
+		HBox colorBox = FXUtil.getHBox(20, 20, 0);
+
+		colorIndicator = new Rectangle(0, 0, 20, 20);
+		colorIndicator.setArcWidth(10);
+		colorIndicator.setArcHeight(10);
+		colorIndicator.setFill(Color.web("#aeaeae"));
+		colorIndicator.setStroke(Color.BLACK);
+		colorIndicator.setStrokeWidth(1);
+		colorIndicator.setSmooth(true);
+
+		colorBox.getChildren().add(colorIndicator);
+
+		gridPane.add(colorBox, 1, 0);
 
 		borderPaneMain.setCenter(borderPaneImage);
 		borderPaneMain.setRight(gridPane);
@@ -590,6 +611,7 @@ public class BallTrackingApplication extends Application {
 
 						if (tracking != null) {
 							tracking.setBallShape(ballShape);
+							colorIndicator.setFill(color);
 							tracking.initTracking(currentFile, pos);
 							showPath.setDisable(false);
 							btnColor.setDisable(false);
@@ -636,6 +658,7 @@ public class BallTrackingApplication extends Application {
 		circle.setFill(null);
 		circle.setStroke(colorBorder);
 		circle.setStrokeWidth(2);
+		circle.setSmooth(true);
 
 		imgAnchor.getChildren().add(circle);
 		pathNodes.add(circle);
@@ -706,7 +729,7 @@ public class BallTrackingApplication extends Application {
 
 			removeManualCircle();
 
-			Image image = new Image(fIn);
+			Image image = new Image(fIn, 640, 480, true, true);
 
 			imgView.setImage(image);
 
