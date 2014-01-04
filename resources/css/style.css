@@ -1,5 +1,6 @@
 #gridPane {
 	-fx-background-color: #aeaeae;
+	-fx-background-radius: 5;
 	-fx-hgap: 10;
 	-fx-vgap: 10;
 	-fx-padding: 10;
