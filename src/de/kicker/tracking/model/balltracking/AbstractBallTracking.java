@@ -5,19 +5,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.TrackingImage;
 
 public abstract class AbstractBallTracking {
 
-	protected Map<File, TrackingImage> trackedImages;
+	protected Map<Integer, TrackingImage> trackedImages;
 
 	protected AbstractBallTracking() {
-		this(new HashMap<File, TrackingImage>());
+		this(new HashMap<Integer, TrackingImage>());
 	}
 
-	protected AbstractBallTracking(Map<File, TrackingImage> trackedImages) {
+	protected AbstractBallTracking(Map<Integer, TrackingImage> trackedImages) {
 		this.trackedImages = trackedImages;
 	}
 
@@ -29,13 +30,17 @@ public abstract class AbstractBallTracking {
 		return images;
 	}
 
-	public TrackingImage getTrackingImage(File file) {
-		return trackedImages.get(file);
+	public Set<Integer> getTrackedIndizes() {
+		return trackedImages.keySet();
 	}
 
-	public void assignBallToFile(File file, Ball ball) {
+	public TrackingImage getTrackingImage(int index) {
+		return trackedImages.get(index);
+	}
+
+	public void assignBallToFile(int index, File file, Ball ball) {
 		TrackingImage image = new TrackingImage(file, ball);
-		trackedImages.put(file, image);
+		trackedImages.put(index, image);
 	}
 
 }
