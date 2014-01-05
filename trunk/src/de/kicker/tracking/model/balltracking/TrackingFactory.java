@@ -14,16 +14,20 @@ public class TrackingFactory {
 	private static final Logger logger = Logger.getLogger(TrackingFactory.class);
 
 	private String directory;
-	protected BallShape ballShape;
+	private BallShape ballShape;
+	private int initialIndex;
+	private int currentIndex;
 
 	public AutomaticBallTracking autoBallTracking;
 	public ManualBallTracking manualBallTracking;
 
-	public TrackingFactory(String directory, BallShape ballShape) {
+	public TrackingFactory(String directory, BallShape ballShape, int initialIndex, int currentIndex) {
 		autoBallTracking = new AutomaticBallTracking();
 		manualBallTracking = new ManualBallTracking();
 		setDirectory(directory);
 		setBallShape(null);
+		setInitialIndex(initialIndex);
+		setCurrentIndex(currentIndex);
 	}
 
 	public String getDirectory() {
@@ -42,27 +46,51 @@ public class TrackingFactory {
 		this.ballShape = ballShape;
 	}
 
-	public void initTracking(File file, Position position) {
+	public int getInitialIndex() {
+		return initialIndex;
+	}
+
+	public void setInitialIndex(int initialIndex) {
+		this.initialIndex = initialIndex;
+	}
+
+	public int getCurrentIndex() {
+		return currentIndex;
+	}
+
+	public void setCurrentIndex(int index) {
+		this.currentIndex = index;
+	}
+
+	public void initTracking(int index, File file, Position position) {
 		if (getBallShape() != null) {
 			Ball ball = new Ball(position, getBallShape());
-			autoBallTracking.assignBallToFile(file, ball);
-			manualBallTracking.assignBallToFile(file, ball);
+			autoBallTracking.assignBallToFile(index, file, ball);
+			manualBallTracking.assignBallToFile(index, file, ball);
+			setInitialIndex(index);
+			setCurrentIndex(index);
 		} else {
 			logger.warn("BallShape element of TrackingFactory is null!");
 		}
 	}
 
-	public void trackAuto(File file) {
+	public void trackAuto(int index, File file) {
 		if (getBallShape() != null) {
-			autoBallTracking.trackFile(file, getBallShape());
+			if (index == getCurrentIndex() + 1) {
+				autoBallTracking.trackFile(index, file, getBallShape());
+				setCurrentIndex(index);
+			} else {
+				logger.error("current index is " + currentIndex + ". you have to track " + (currentIndex + 1)
+						+ " instead of " + index + "!");
+			}
 		} else {
 			logger.warn("BallShape element of TrackingFactory is null!");
 		}
 	}
 
-	public void trackManual(File file, Position position) {
+	public void trackManual(int index, File file, Position position) {
 		if (getBallShape() != null) {
-			manualBallTracking.assignBallToFile(file, new Ball(position, getBallShape()));
+			manualBallTracking.assignBallToFile(index, file, new Ball(position, getBallShape()));
 		} else {
 			logger.warn("BallShape element of TrackingFactory is null!");
 		}

@@ -11,6 +11,7 @@
 <!ATTLIST color green CDATA #REQUIRED>
 <!ATTLIST color blue CDATA #REQUIRED>
 <!ATTLIST color opacity CDATA #REQUIRED>
+<!ATTLIST image index CDATA #REQUIRED>
 <!ATTLIST image file CDATA #REQUIRED>
 <!ATTLIST image type CDATA #REQUIRED>
 <!ATTLIST position x CDATA #REQUIRED>

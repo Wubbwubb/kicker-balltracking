@@ -3,10 +3,10 @@ package de.kicker.tracking.model.xml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.scene.paint.Color;
 
@@ -38,9 +38,10 @@ public class XMLLayer {
 		String dir = "E:\\Praktikum Master\\Bilder";
 		File dirFile = new File(dir);
 		File[] files = dirFile.listFiles();
-		TrackingFactory factory = new TrackingFactory(dir, null);
+		TrackingFactory factory = new TrackingFactory(dir, null, 0, 0);
+		int i = 0;
 		for (File file : files) {
-			factory.trackAuto(file);
+			factory.trackAuto(i++, file);
 		}
 		File f = new File("xml/test.xml");
 		exportToXML(factory, f.getAbsolutePath());
@@ -80,14 +81,18 @@ public class XMLLayer {
 			shapeEl.addContent(colorEl);
 			root.addContent(shapeEl);
 
-			String type = AutomaticBallTracking.class.getAnnotation(XMLType.class).type();
-			Collection<TrackingImage> images = trackingFactory.autoBallTracking.getAllTrackedImages();
-			for (TrackingImage image : images) {
+			String type = AutomaticBallTracking.class.getAnnotation(XMLType.class).value();
+			Set<Integer> indizes = trackingFactory.autoBallTracking.getTrackedIndizes();
+			for (int index : indizes) {
+				TrackingImage image = trackingFactory.autoBallTracking.getTrackingImage(index);
+
 				Element imgEl = new Element("image");
 
+				Attribute indexAtt = new Attribute("index", index + "");
 				Attribute fileAtt = new Attribute("file", image.getFile().getName());
 				Attribute typeAtt = new Attribute("type", type);
 
+				imgEl.setAttribute(indexAtt);
 				imgEl.setAttribute(fileAtt);
 				imgEl.setAttribute(typeAtt);
 
@@ -107,14 +112,18 @@ public class XMLLayer {
 				root.addContent(imgEl);
 			}
 
-			type = ManualBallTracking.class.getAnnotation(XMLType.class).type();
-			images = trackingFactory.manualBallTracking.getAllTrackedImages();
-			for (TrackingImage image : images) {
+			type = ManualBallTracking.class.getAnnotation(XMLType.class).value();
+			indizes = trackingFactory.manualBallTracking.getTrackedIndizes();
+			for (int index : indizes) {
+				TrackingImage image = trackingFactory.manualBallTracking.getTrackingImage(index);
+
 				Element imgEl = new Element("image");
 
+				Attribute indexAtt = new Attribute("index", index + "");
 				Attribute fileAtt = new Attribute("file", image.getFile().getName());
 				Attribute typeAtt = new Attribute("type", type);
 
+				imgEl.setAttribute(indexAtt);
 				imgEl.setAttribute(fileAtt);
 				imgEl.setAttribute(typeAtt);
 
@@ -159,8 +168,8 @@ public class XMLLayer {
 
 		try {
 			String dir = null;
-			Map<File, TrackingImage> autoTrackedImages = new HashMap<>();
-			Map<File, TrackingImage> manualTrackedImages = new HashMap<>();
+			Map<Integer, TrackingImage> autoTrackedImages = new HashMap<>();
+			Map<Integer, TrackingImage> manualTrackedImages = new HashMap<>();
 
 			Document doc = builder.build(xmlFile);
 			Element root = doc.getRootElement();
@@ -181,11 +190,15 @@ public class XMLLayer {
 
 			List<Element> images = root.getChildren("image");
 
-			String autoType = AutomaticBallTracking.class.getAnnotation(XMLType.class).type();
-			String manualType = ManualBallTracking.class.getAnnotation(XMLType.class).type();
+			String autoType = AutomaticBallTracking.class.getAnnotation(XMLType.class).value();
+			String manualType = ManualBallTracking.class.getAnnotation(XMLType.class).value();
+
+			int initialIndex = Integer.MAX_VALUE;
+			int currentIndex = Integer.MIN_VALUE;
 
 			for (Element imgEl : images) {
 
+				int index = Integer.parseInt(imgEl.getAttributeValue("index"));
 				File file = new File(dir + File.separator + imgEl.getAttributeValue("file"));
 
 				Element ballEl = imgEl.getChild("ball");
@@ -199,14 +212,17 @@ public class XMLLayer {
 				String type = imgEl.getAttributeValue("type");
 
 				if (autoType.equals(type)) {
-					autoTrackedImages.put(file, image);
+					autoTrackedImages.put(index, image);
+					currentIndex = Math.max(currentIndex, index);
 				} else if (manualType.equals(type)) {
-					manualTrackedImages.put(file, image);
+					manualTrackedImages.put(index, image);
 				}
+
+				initialIndex = Math.min(initialIndex, index);
 
 			}
 
-			factory = new TrackingFactory(dir, ballShape);
+			factory = new TrackingFactory(dir, ballShape, initialIndex, currentIndex);
 			factory.autoBallTracking = new AutomaticBallTracking(autoTrackedImages);
 			factory.manualBallTracking = new ManualBallTracking(manualTrackedImages);
 
