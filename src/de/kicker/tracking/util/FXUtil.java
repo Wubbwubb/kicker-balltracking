@@ -1,7 +1,8 @@
-package de.kicker.tracking.view;
+package de.kicker.tracking.util;
 
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 public final class FXUtil {
 
@@ -39,6 +40,13 @@ public final class FXUtil {
 			vbox.setSpacing(spacing);
 		}
 		return vbox;
+	}
+
+	public static String getColorString(Color color) {
+		int red = (int) Math.round(255 * color.getRed());
+		int green = (int) Math.round(255 * color.getGreen());
+		int blue = (int) Math.round(255 * color.getBlue());
+		return "rgb(" + red + "," + green + "," + blue + ")";
 	}
 
 }

@@ -1,5 +1,6 @@
 package de.kicker.tracking.model;
 
+import de.kicker.tracking.util.FXUtil;
 import javafx.scene.paint.Color;
 
 public class BallShape {
@@ -26,6 +27,11 @@ public class BallShape {
 
 	public void setColor(Color color) {
 		this.color = color;
+	}
+
+	@Override
+	public String toString() {
+		return "radius: " + radius + " color: " + FXUtil.getColorString(color);
 	}
 
 }

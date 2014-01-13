@@ -21,14 +21,13 @@ public class ImageTest {
 
 		BufferedImage orgImage = ImageIO.read(orgFile);
 
-		BufferedImage grayImage = new BufferedImage(orgImage.getWidth(),
-				orgImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage grayImage = new BufferedImage(orgImage.getWidth(), orgImage.getHeight(),
+				BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g = grayImage.getGraphics();
 		g.drawImage(orgImage, 0, 0, null);
 		g.dispose();
 
-		Color[][] colors = new Color[grayImage.getWidth()][grayImage
-				.getHeight()];
+		Color[][] colors = new Color[grayImage.getWidth()][grayImage.getHeight()];
 		for (int i = 0; i < colors.length; i++) {
 			for (int j = 0; j < colors[0].length; j++) {
 				colors[i][j] = getColor(grayImage, new Point(i, j));
@@ -37,8 +36,8 @@ public class ImageTest {
 
 		BufferedImage orgImage2 = ImageIO.read(orgFile2);
 
-		BufferedImage grayImage2 = new BufferedImage(orgImage2.getWidth(),
-				orgImage2.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage grayImage2 = new BufferedImage(orgImage2.getWidth(), orgImage2.getHeight(),
+				BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g2 = grayImage2.getGraphics();
 		g2.drawImage(orgImage2, 0, 0, null);
 		g2.dispose();
@@ -47,11 +46,11 @@ public class ImageTest {
 			for (int j = 0; j < colors[0].length; j++) {
 				Color temp1 = colors[i][j];
 				Color temp2 = getColor(grayImage2, new Point(i, j));
-				grayImage2.setRGB(i, j,
-						new Color(Math.abs(temp1.getRed() - temp2.getRed()),
-								Math.abs(temp1.getGreen() - temp2.getGreen()),
-								Math.abs(temp1.getBlue() - temp2.getBlue()))
-								.getRGB());
+				grayImage2.setRGB(
+						i,
+						j,
+						new Color(Math.abs(temp1.getRed() - temp2.getRed()), Math.abs(temp1.getGreen()
+								- temp2.getGreen()), Math.abs(temp1.getBlue() - temp2.getBlue())).getRGB());
 			}
 		}
 
