@@ -7,11 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javafx.scene.input.KeyCombination;
+
 public final class Settings {
 
 	private static Settings singleton;
 
 	Properties prop;
+
+	private boolean debugMode;
 
 	// ##### installation directory #####
 	private String installDir;
@@ -33,12 +37,20 @@ public final class Settings {
 
 	private int ballRadius;
 
+	private KeyCombination keyCombinationBtnPrev;
+	private KeyCombination keyCombinationBtnNext;
+	private KeyCombination keyCombinationTrackNext;
+	private KeyCombination keyCombinationTrackAll;
+	private KeyCombination keyCombinationTrackManual;
+
 	private Settings() {
 		InputStream fIn = null;
 		try {
 			fIn = new FileInputStream("properties" + File.separator + "settings.properties");
 			prop = new Properties();
 			prop.load(fIn);
+
+			setDebugMode(getBooleanProperty("debug_mode", false));
 
 			setInstallDir(getProperty("install_dir", ""));
 
@@ -56,6 +68,12 @@ public final class Settings {
 			setFileChooserTitle(getProperty("filechooser_title", "Choose Image"));
 
 			setBallRadius(getIntProperty("ball_radius", 6));
+
+			setKeyCombinationBtnPrev(KeyCombination.keyCombination("F3"));
+			setKeyCombinationBtnNext(KeyCombination.keyCombination("F4"));
+			setKeyCombinationTrackNext(KeyCombination.keyCombination("F6"));
+			setKeyCombinationTrackAll(KeyCombination.keyCombination("F8"));
+			setKeyCombinationTrackManual(KeyCombination.keyCombination("F5"));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -86,6 +104,16 @@ public final class Settings {
 		int value = 0;
 		try {
 			value = Integer.parseInt(prop.getProperty(key));
+		} catch (Exception e) {
+			return defaultValue;
+		}
+		return value;
+	}
+
+	private boolean getBooleanProperty(String key, boolean defaultValue) {
+		boolean value = false;
+		try {
+			value = Boolean.parseBoolean(prop.getProperty(key));
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -197,4 +225,51 @@ public final class Settings {
 		this.ballRadius = ballRadius;
 	}
 
+	public KeyCombination getKeyCombinationBtnPrev() {
+		return keyCombinationBtnPrev;
+	}
+
+	private void setKeyCombinationBtnPrev(KeyCombination keyCombinationBtnPrev) {
+		this.keyCombinationBtnPrev = keyCombinationBtnPrev;
+	}
+
+	public KeyCombination getKeyCombinationBtnNext() {
+		return keyCombinationBtnNext;
+	}
+
+	private void setKeyCombinationBtnNext(KeyCombination keyCombinationBtnNext) {
+		this.keyCombinationBtnNext = keyCombinationBtnNext;
+	}
+
+	public KeyCombination getKeyCombinationTrackNext() {
+		return keyCombinationTrackNext;
+	}
+
+	private void setKeyCombinationTrackNext(KeyCombination keyCombinationTrackNext) {
+		this.keyCombinationTrackNext = keyCombinationTrackNext;
+	}
+
+	public KeyCombination getKeyCombinationTrackAll() {
+		return keyCombinationTrackAll;
+	}
+
+	private void setKeyCombinationTrackAll(KeyCombination keyCombinationTrackAll) {
+		this.keyCombinationTrackAll = keyCombinationTrackAll;
+	}
+
+	public KeyCombination getKeyCombinationTrackManual() {
+		return keyCombinationTrackManual;
+	}
+
+	private void setKeyCombinationTrackManual(KeyCombination keyCombinationTrackManual) {
+		this.keyCombinationTrackManual = keyCombinationTrackManual;
+	}
+
+	public boolean isDebugMode() {
+		return debugMode;
+	}
+
+	private void setDebugMode(boolean debugMode) {
+		this.debugMode = debugMode;
+	}
 }
