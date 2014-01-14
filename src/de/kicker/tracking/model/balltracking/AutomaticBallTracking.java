@@ -12,6 +12,7 @@ import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
+import de.kicker.tracking.model.settings.Settings;
 import de.kicker.tracking.model.xml.BallTrackingType;
 import de.kicker.tracking.util.AWTUtil;
 
@@ -19,13 +20,12 @@ import de.kicker.tracking.util.AWTUtil;
 public class AutomaticBallTracking extends AbstractBallTracking {
 
 	private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
+	private static final Settings settings = Settings.getInstance();
 
 	private static final int X_MIN = 88;
 	private static final int X_MAX = 560;
 	private static final int Y_MIN = 106;
 	private static final int Y_MAX = 378;
-
-	private static final int FAIL_THRESHOLD = 10;
 
 	private int searchFails;
 
@@ -61,14 +61,15 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 			BufferedImage actImage = AWTUtil.getImageFromFile(file);
 			// BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage,
 			// actImage);
-			BufferedImage negImage = AWTUtil.getNegativeImage(actImage, ballShape.getAWTColor(), 40);
+			BufferedImage negImage = AWTUtil.getNegativeImage(actImage, ballShape.getAWTColor(),
+					settings.getMaxColorDistance());
 
-			// File debugFile = AWTUtil.getOutputFile(index, "negative");
-			// AWTUtil.writeImageToFile(negImage, debugFile);
+			File debugFile = AWTUtil.getOutputFile(index, "negative");
+			AWTUtil.writeImageToFile(negImage, debugFile);
 
 			boolean[][] bools = AWTUtil.getWhiteBooleans(negImage);
 
-			if (searchFails > FAIL_THRESHOLD) {
+			if (searchFails >= settings.getSearchFailThreshold()) {
 				logger.debug("reset prePosition");
 				prePosition = resetPrePosition(bools, prePosition);
 				if (prePosition == null) {
@@ -87,8 +88,8 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 
 				logger.debug("prePosition is not marked");
 				Position nextBallPosition = findNextBallPosition(bools, prePosition);
-				logger.debug("next position: " + position.toString());
 				if (nextBallPosition != null) {
+					logger.debug("next position: " + nextBallPosition.toString());
 					searchFails = 0;
 					return getPositionAroundPrePosition(bools, nextBallPosition);
 				}
@@ -112,11 +113,13 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 		int initialY = prePosition.getY();
 
 		int k = 1;
-		while (k <= 500) {
+		while (true) {
+			int startX = Math.max(-k, X_MIN - initialX);
+			int startY = Math.max(-k, Y_MIN - initialY);
 			int maxX = Math.min(k, X_MAX - initialX);
 			int maxY = Math.min(k, Y_MAX - initialY);
-			for (int x = Math.max(-k, X_MIN - initialX); x <= maxX; x++) {
-				for (int y = Math.max(-k, Y_MIN - initialY); y <= maxY; y++) {
+			for (int x = startX; x <= maxX; x++) {
+				for (int y = startY; y <= maxY; y++) {
 					if (Math.abs(x) != k && Math.abs(y) != k) {
 						if (y != maxY) {
 							y = maxY - 1;
@@ -131,6 +134,10 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 						}
 					}
 				}
+			}
+			if (startX == X_MIN - initialX && maxX == X_MAX - initialX && startY == Y_MIN - initialY
+					&& maxY == Y_MAX - initialY) {
+				break;
 			}
 			k++;
 		}
@@ -166,7 +173,7 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 		int initialY = prePosition.getY();
 
 		int k = 1;
-		while (k <= 25) {
+		while (k <= settings.getRadiusSearchSmall()) {
 			int maxX = Math.min(k, X_MAX - initialX);
 			int maxY = Math.min(k, Y_MAX - initialY);
 			for (int x = Math.max(-k, X_MIN - initialX); x <= maxX; x++) {
@@ -180,7 +187,9 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 
 					Position p = new Position(initialX + x, initialY + y);
 					if (negImage[p.getX()][p.getY()]) {
-						return p;
+						if (isBallIndicator(negImage, p)) {
+							return p;
+						}
 					}
 				}
 			}
