@@ -43,6 +43,10 @@ public final class Settings {
 	private KeyCombination keyCombinationTrackAll;
 	private KeyCombination keyCombinationTrackManual;
 
+	private int searchFailThreshold;
+	private int maxColorDistance;
+	private int radiusSearchSmall;
+
 	private Settings() {
 		InputStream fIn = null;
 		try {
@@ -74,6 +78,10 @@ public final class Settings {
 			setKeyCombinationTrackNext(KeyCombination.keyCombination("F6"));
 			setKeyCombinationTrackAll(KeyCombination.keyCombination("F8"));
 			setKeyCombinationTrackManual(KeyCombination.keyCombination("F5"));
+
+			setSearchFailThreshold(getIntProperty("search_fail_threshold", 5));
+			setMaxColorDistance(getIntProperty("max_color_distance", 40));
+			setRadiusSearchSmall(getIntProperty("radius_search_small", 25));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -271,5 +279,29 @@ public final class Settings {
 
 	private void setDebugMode(boolean debugMode) {
 		this.debugMode = debugMode;
+	}
+
+	public int getSearchFailThreshold() {
+		return searchFailThreshold;
+	}
+
+	private void setSearchFailThreshold(int searchFailThreshold) {
+		this.searchFailThreshold = searchFailThreshold;
+	}
+
+	public int getMaxColorDistance() {
+		return maxColorDistance;
+	}
+
+	private void setMaxColorDistance(int maxColorDistance) {
+		this.maxColorDistance = maxColorDistance;
+	}
+
+	public int getRadiusSearchSmall() {
+		return radiusSearchSmall;
+	}
+
+	private void setRadiusSearchSmall(int radiusSearchSmall) {
+		this.radiusSearchSmall = radiusSearchSmall;
 	}
 }
