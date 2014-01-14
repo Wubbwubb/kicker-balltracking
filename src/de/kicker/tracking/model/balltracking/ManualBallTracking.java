@@ -3,9 +3,9 @@ package de.kicker.tracking.model.balltracking;
 import java.util.Map;
 
 import de.kicker.tracking.model.TrackingImage;
-import de.kicker.tracking.model.xml.XMLType;
+import de.kicker.tracking.model.xml.BallTrackingType;
 
-@XMLType(value = "manual")
+@BallTrackingType(value = "manual")
 public class ManualBallTracking extends AbstractBallTracking {
 
 	public ManualBallTracking() {

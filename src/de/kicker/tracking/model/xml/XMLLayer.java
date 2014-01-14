@@ -34,21 +34,6 @@ public class XMLLayer {
 	private static Logger logger = Logger.getLogger(XMLLayer.class);
 	private static Settings settings = Settings.getInstance();
 
-	public static void main(String[] args) {
-		String dir = "E:\\Praktikum Master\\Bilder";
-		File dirFile = new File(dir);
-		File[] files = dirFile.listFiles();
-		TrackingFactory factory = new TrackingFactory(dir, null, 0, 0);
-		int i = 0;
-		for (File file : files) {
-			factory.trackAuto(i++, file);
-		}
-		File f = new File("xml/test.xml");
-		exportToXML(factory, f.getAbsolutePath());
-		TrackingFactory t = readBallTracking(f);
-		System.out.println(t.autoBallTracking.getAllTrackedImages().size());
-	}
-
 	public static void exportToXML(TrackingFactory trackingFactory, String file) {
 
 		try {
@@ -68,10 +53,10 @@ public class XMLLayer {
 			shapeEl.setAttribute(radiusAtt);
 
 			Element colorEl = new Element("color");
-			Attribute rAtt = new Attribute("red", trackingFactory.getBallShape().getColor().getRed() + "");
-			Attribute gAtt = new Attribute("green", trackingFactory.getBallShape().getColor().getGreen() + "");
-			Attribute bAtt = new Attribute("blue", trackingFactory.getBallShape().getColor().getBlue() + "");
-			Attribute oAtt = new Attribute("opacity", trackingFactory.getBallShape().getColor().getOpacity() + "");
+			Attribute rAtt = new Attribute("red", trackingFactory.getBallShape().getFXColor().getRed() + "");
+			Attribute gAtt = new Attribute("green", trackingFactory.getBallShape().getFXColor().getGreen() + "");
+			Attribute bAtt = new Attribute("blue", trackingFactory.getBallShape().getFXColor().getBlue() + "");
+			Attribute oAtt = new Attribute("opacity", trackingFactory.getBallShape().getFXColor().getOpacity() + "");
 
 			colorEl.setAttribute(rAtt);
 			colorEl.setAttribute(gAtt);
@@ -81,7 +66,7 @@ public class XMLLayer {
 			shapeEl.addContent(colorEl);
 			root.addContent(shapeEl);
 
-			String type = AutomaticBallTracking.class.getAnnotation(XMLType.class).value();
+			String type = AutomaticBallTracking.class.getAnnotation(BallTrackingType.class).value();
 			Set<Integer> indizes = trackingFactory.autoBallTracking.getTrackedIndizes();
 			for (int index : indizes) {
 				TrackingImage image = trackingFactory.autoBallTracking.getTrackingImage(index);
@@ -112,7 +97,7 @@ public class XMLLayer {
 				root.addContent(imgEl);
 			}
 
-			type = ManualBallTracking.class.getAnnotation(XMLType.class).value();
+			type = ManualBallTracking.class.getAnnotation(BallTrackingType.class).value();
 			indizes = trackingFactory.manualBallTracking.getTrackedIndizes();
 			for (int index : indizes) {
 				TrackingImage image = trackingFactory.manualBallTracking.getTrackingImage(index);
@@ -190,8 +175,8 @@ public class XMLLayer {
 
 			List<Element> images = root.getChildren("image");
 
-			String autoType = AutomaticBallTracking.class.getAnnotation(XMLType.class).value();
-			String manualType = ManualBallTracking.class.getAnnotation(XMLType.class).value();
+			String autoType = AutomaticBallTracking.class.getAnnotation(BallTrackingType.class).value();
+			String manualType = ManualBallTracking.class.getAnnotation(BallTrackingType.class).value();
 
 			int initialIndex = Integer.MAX_VALUE;
 			int currentIndex = Integer.MIN_VALUE;

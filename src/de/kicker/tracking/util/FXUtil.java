@@ -6,6 +6,9 @@ import javafx.scene.paint.Color;
 
 public final class FXUtil {
 
+	private FXUtil() {
+	}
+
 	public static HBox getHBox(int width, int height, int spacing) {
 		HBox hbox = new HBox();
 		if (width >= 0) {
