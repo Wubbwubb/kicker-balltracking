@@ -47,6 +47,9 @@ public final class Settings {
 	private int maxColorDistance;
 	private int radiusSearchSmall;
 
+	private String debugDirectory;
+	private boolean createDebugImages;
+
 	private Settings() {
 		InputStream fIn = null;
 		try {
@@ -63,7 +66,8 @@ public final class Settings {
 			setWindowHeight(getIntProperty("window_height", 900));
 			setWindowIcon(getProperty("window_icon", "images/icon.png"));
 
-			setImageDir(getProperty("image_dir", "E:\\Praktikum Master\\Bilder"));
+			setImageDir(getProperty("image_dir", "E:" + File.separator + "Praktikum Master" + File.separator
+					+ "Bilder_orange"));
 			setImagePlaceholder(getProperty("image_placeholder", "images/img_placeholder"));
 			setImageWidth(getIntProperty("image_width", 640));
 			setImageHeight(getIntProperty("image_height", 480));
@@ -82,6 +86,9 @@ public final class Settings {
 			setSearchFailThreshold(getIntProperty("search_fail_threshold", 5));
 			setMaxColorDistance(getIntProperty("max_color_distance", 40));
 			setRadiusSearchSmall(getIntProperty("radius_search_small", 25));
+
+			setDebugDirectory(getProperty("debug_dir", "E:" + File.separator + "Praktikum Master"));
+			setCreateDebugImages(getBooleanProperty("create_debug_images", false));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -303,5 +310,21 @@ public final class Settings {
 
 	private void setRadiusSearchSmall(int radiusSearchSmall) {
 		this.radiusSearchSmall = radiusSearchSmall;
+	}
+
+	public String getDebugDirectory() {
+		return debugDirectory;
+	}
+
+	private void setDebugDirectory(String debugDirectory) {
+		this.debugDirectory = debugDirectory;
+	}
+
+	public boolean createDebugImages() {
+		return createDebugImages;
+	}
+
+	private void setCreateDebugImages(boolean createDebugImages) {
+		this.createDebugImages = createDebugImages;
 	}
 }

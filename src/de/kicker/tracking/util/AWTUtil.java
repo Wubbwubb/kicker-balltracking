@@ -8,8 +8,11 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import de.kicker.tracking.model.Position;
+import de.kicker.tracking.model.settings.Settings;
 
 public final class AWTUtil {
+
+	private static final Settings settings = Settings.getInstance();
 
 	private AWTUtil() {
 	}
@@ -21,7 +24,8 @@ public final class AWTUtil {
 			indexString += 0;
 		}
 		indexString += index;
-		File file = new File("E:/Praktikum Master/" + bez + "/" + bez + "_" + indexString + ".png");
+		File file = new File(settings.getDebugDirectory() + File.separator + bez + File.separator + bez + "_"
+				+ indexString + ".png");
 		file.mkdirs();
 		return file;
 	}

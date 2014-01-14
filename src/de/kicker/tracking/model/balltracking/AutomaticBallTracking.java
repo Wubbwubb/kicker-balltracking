@@ -64,8 +64,10 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 			BufferedImage negImage = AWTUtil.getNegativeImage(actImage, ballShape.getAWTColor(),
 					settings.getMaxColorDistance());
 
-			File debugFile = AWTUtil.getOutputFile(index, "negative");
-			AWTUtil.writeImageToFile(negImage, debugFile);
+			if (settings.createDebugImages()) {
+				File debugFile = AWTUtil.getOutputFile(index, "negative");
+				AWTUtil.writeImageToFile(negImage, debugFile);
+			}
 
 			boolean[][] bools = AWTUtil.getWhiteBooleans(negImage);
 
