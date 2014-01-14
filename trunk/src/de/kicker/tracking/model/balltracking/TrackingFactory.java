@@ -96,16 +96,6 @@ public class TrackingFactory {
 		}
 	}
 
-	public int trackAll(File[] files) {
-		int index = getInitialIndex();
-		setCurrentIndex(index);
-		for (; index < files.length - 1;) {
-			index++;
-			trackAuto(index, files[index]);
-		}
-		return index;
-	}
-
 	public void exportToXML(File file) {
 		if (getBallShape() != null) {
 			XMLLayer.exportToXML(this, file.getAbsolutePath());
