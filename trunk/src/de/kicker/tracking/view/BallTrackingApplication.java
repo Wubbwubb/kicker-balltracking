@@ -17,7 +17,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -26,7 +25,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -44,9 +42,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import org.apache.log4j.Logger;
 
@@ -500,11 +496,6 @@ public class BallTrackingApplication extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 				removeManualCircle();
-				Stage dialog = new Stage(StageStyle.UTILITY);
-				dialog.initModality(Modality.APPLICATION_MODAL);
-				Scene scene = new Scene(new Group(new ProgressBar()));
-				dialog.setScene(scene);
-				dialog.show();
 				imgView.setCursor(Cursor.CROSSHAIR);
 				imgAnchor.setOnMouseClicked(new EventHandler<MouseEvent>() {
 					@Override
