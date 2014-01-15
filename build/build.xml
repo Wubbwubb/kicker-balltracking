@@ -6,6 +6,10 @@
 		<!-- ########    settings for the build precess are loaded from build.properties    ######## -->
 		<property file="build.properties" />
 
+		<!-- ########    delete target directory if exists    ######## -->
+		<delete dir="${dest_dir}" />
+		<mkdir dir="${dest_dir}" />
+
 		<!-- ########    build the runnable jar    ######## -->
 		<jar destfile="${dest_dir}/KickerTracking.jar">
 			<manifest>
