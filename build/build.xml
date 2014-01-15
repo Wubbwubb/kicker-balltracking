@@ -1,47 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project Kicker BallTracking with libraries in sub-folder">
+<project default="buildBallTracking" name="Create Tool Kicker BallTracking">
 
-    <target name="create_run_jar">
-    	
-    	<property name="src_dir" value="C:/Users/Max/workspace/Kicker BallTracking"/>
-    	<property name="dest_dir" value="C:/Users/Max/Desktop/Praktikum"/>
-		<property name="lib_dir" value="lib"/>
+	<target name="buildBallTracking">
 
-        <jar destfile="${dest_dir}/KickerTracking.jar">
-            <manifest>
-                <attribute name="Main-Class" value="de.kicker.tracking.view.BallTrackingApplication"/>
-                <attribute name="Class-Path" value=". ${lib_dir}/jdom-2.0.5.jar ${lib_dir}/jfxrt.jar ${lib_dir}/log4j-1.2.15.jar"/>
-            </manifest>
-            <fileset dir="${src_dir}/bin"/>
-        </jar>
-    	
-        <copy file="${src_dir}/build/startup.bat" todir="${dest_dir}"/>
-    	
-        <delete dir="${dest_dir}/${lib_dir}"/>
-        <mkdir dir="${dest_dir}/${lib_dir}"/>
-    	
-        <delete dir="${dest_dir}/properties"/>
-        <mkdir dir="${dest_dir}/properties"/>
-    	
-        <delete dir="${dest_dir}/images"/>
-        <mkdir dir="${dest_dir}/images"/>
-    	
-        <delete dir="${dest_dir}/log"/>
-        <mkdir dir="${dest_dir}/log"/>
-    	
-        <delete dir="${dest_dir}/xml"/>
-        <mkdir dir="${dest_dir}/xml"/>
+		<!-- ########    settings for the build precess are loaded from build.properties    ######## -->
+		<property file="build.properties" />
 
-        <copy file="${src_dir}/lib/jdom-2.0.5.jar" todir="${dest_dir}/${lib_dir}"/>
-        <copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/${lib_dir}"/>
-        <copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/${lib_dir}"/>
-    	
-        <copy file="${src_dir}/properties/settings.properties" todir="${dest_dir}/properties"/>
-    	<replace file="${dest_dir}/properties/settings.properties" token="INSTALL_DIR" value="${dest_dir}"/>
-    	
-        <copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images"/>
-        <copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images"/>
-    	
-        <copy file="${src_dir}/xml/balltracking.dtd" todir="${dest_dir}/xml"/>
-    </target>
+		<!-- ########    build the runnable jar    ######## -->
+		<jar destfile="${dest_dir}/KickerTracking.jar">
+			<manifest>
+				<attribute name="Main-Class" value="de.kicker.tracking.view.BallTrackingApplication" />
+				<attribute name="Class-Path" value=". lib/jdom-2.0.5.jar lib/jfxrt.jar lib/log4j-1.2.15.jar" />
+			</manifest>
+			<fileset dir="${src_dir}/bin" />
+		</jar>
+
+		<!-- ########    copy the necessary files    ######## -->
+		<copy file="${src_dir}/build/startup.bat" todir="${dest_dir}" />
+
+		<delete dir="${dest_dir}/lib" />
+		<mkdir dir="${dest_dir}/lib" />
+
+		<delete dir="${dest_dir}/properties" />
+		<mkdir dir="${dest_dir}/properties" />
+
+		<delete dir="${dest_dir}/images" />
+		<mkdir dir="${dest_dir}/images" />
+
+		<delete dir="${dest_dir}/log" />
+		<mkdir dir="${dest_dir}/log" />
+
+		<delete dir="${dest_dir}/xml" />
+		<mkdir dir="${dest_dir}/xml" />
+
+		<copy file="${src_dir}/lib/jdom-2.0.5.jar" todir="${dest_dir}/lib" />
+		<copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/lib" />
+		<copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/lib" />
+
+		<copy file="${src_dir}/properties/settings.properties" todir="${dest_dir}/properties" />
+		<replace file="${dest_dir}/properties/settings.properties" token="INSTALL_DIR" value="${dest_dir}" />
+
+		<copy file="${src_dir}/images/icon.png" todir="${dest_dir}/images" />
+		<copy file="${src_dir}/images/img_placeholder.png" todir="${dest_dir}/images" />
+
+		<copy file="${src_dir}/xml/balltracking.dtd" todir="${dest_dir}/xml" />
+
+	</target>
+
 </project>
