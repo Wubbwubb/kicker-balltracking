@@ -112,7 +112,7 @@ public class BallTrackingApplication extends Application {
 			public void handle(ActionEvent event) {
 				if (currentIndex > 0) {
 					currentIndex--;
-					refreshImageView();
+					refreshImageView(!showPath.isSelected());
 				}
 			}
 		});
@@ -125,7 +125,7 @@ public class BallTrackingApplication extends Application {
 			public void handle(ActionEvent event) {
 				if (currentIndex < files.length - 1) {
 					currentIndex++;
-					refreshImageView();
+					refreshImageView(!showPath.isSelected());
 				}
 			}
 		});
@@ -347,7 +347,7 @@ public class BallTrackingApplication extends Application {
 							break;
 						}
 					}
-					refreshImageView();
+					refreshImageView(true);
 				}
 
 			}
@@ -472,7 +472,7 @@ public class BallTrackingApplication extends Application {
 						currentIndex = nextFactoryIndex;
 						trackingFactory.trackAuto(currentIndex, files[currentIndex]);
 					}
-					refreshImageView();
+					refreshImageView(!showPath.isSelected());
 				}
 			}
 		});
@@ -552,7 +552,7 @@ public class BallTrackingApplication extends Application {
 				trackManual.setDisable(false);
 				exportToFile.setDisable(false);
 				removeManualCircle();
-				setMarker();
+				setMarker(false);
 				imgView.setCursor(Cursor.DEFAULT);
 				imgAnchor.setOnMouseClicked(null);
 				logger.info("Initializing BallTracking finished");
@@ -662,7 +662,7 @@ public class BallTrackingApplication extends Application {
 					directory = new File(trackingFactory.getDirectory());
 					refreshDirectory();
 					currentIndex = trackingFactory.getInitialIndex();
-					refreshImageView();
+					refreshImageView(true);
 				}
 
 			}
@@ -698,7 +698,7 @@ public class BallTrackingApplication extends Application {
 				for (; currentIndex < files.length - 1;) {
 					if (isCancelled()) {
 						logger.debug("cancelled tracking all");
-						refreshImageView();
+						refreshImageView(true);
 						break;
 					}
 					currentIndex++;
@@ -709,7 +709,7 @@ public class BallTrackingApplication extends Application {
 
 				logger.debug("finished tracking all");
 
-				refreshImageView();
+				refreshImageView(true);
 				dialog.close();
 
 				return null;
@@ -763,7 +763,7 @@ public class BallTrackingApplication extends Application {
 		}
 		pathNodes = new LinkedList<>();
 		showPath.setSelected(false);
-		setMarker();
+		setMarker(false);
 
 	}
 
@@ -833,7 +833,7 @@ public class BallTrackingApplication extends Application {
 
 			imgView.setImage(image);
 
-			setMarker();
+			setMarker(false);
 
 			if (fIn != null) {
 				try {
@@ -846,7 +846,7 @@ public class BallTrackingApplication extends Application {
 
 	}
 
-	private void refreshImageView() {
+	private void refreshImageView(boolean removeMarkers) {
 
 		FileInputStream fIn = null;
 
@@ -877,7 +877,9 @@ public class BallTrackingApplication extends Application {
 					: currentFile.getName();
 			lbFilename.setText(labelText);
 
-			removeMarkers();
+			if (removeMarkers) {
+				removeMarkers();
+			}
 
 			removeManualCircle();
 
@@ -886,7 +888,7 @@ public class BallTrackingApplication extends Application {
 
 			checkNavBtns();
 
-			setMarker();
+			setMarker(!removeMarkers);
 
 			if (fIn != null) {
 				try {
@@ -898,11 +900,17 @@ public class BallTrackingApplication extends Application {
 		}
 	}
 
-	private void setMarker() {
+	private void setMarker(boolean addLine) {
 		if (trackingFactory != null) {
 			TrackingImage atrImage = trackingFactory.autoBallTracking.getTrackingImage(currentIndex);
 			if (atrImage != null) {
 				addMarker(atrImage, Color.RED, null);
+				if (addLine) {
+					TrackingImage patrImage = trackingFactory.autoBallTracking.getTrackingImage(currentIndex - 1);
+					if (patrImage != null) {
+						addLine(patrImage.getBall().getPosition(), atrImage.getBall().getPosition(), Color.RED);
+					}
+				}
 			}
 			TrackingImage mtrImage = trackingFactory.manualBallTracking.getTrackingImage(currentIndex);
 			if (mtrImage != null) {
