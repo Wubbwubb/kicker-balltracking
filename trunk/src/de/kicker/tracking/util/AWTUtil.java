@@ -37,7 +37,7 @@ public final class AWTUtil {
 	public static BufferedImage getDifferenceImage(BufferedImage preImage, BufferedImage actImage) {
 
 		BufferedImage diffImage = new BufferedImage(preImage.getWidth(), preImage.getHeight(),
-				BufferedImage.TYPE_BYTE_GRAY);
+				BufferedImage.TYPE_INT_RGB);
 
 		for (int i = 0; i < diffImage.getWidth(); i++) {
 			for (int j = 0; j < diffImage.getHeight(); j++) {
@@ -46,6 +46,23 @@ public final class AWTUtil {
 				Color temp2 = getColor(actImage, pos);
 				Color diffColor = new Color(Math.abs(temp1.getRed() - temp2.getRed()), Math.abs(temp1.getGreen()
 						- temp2.getGreen()), Math.abs(temp1.getBlue() - temp2.getBlue()));
+				diffImage.setRGB(i, j, diffColor.getRGB());
+			}
+		}
+
+		return diffImage;
+	}
+
+	public static BufferedImage getDifferenceImage(BufferedImage image, Color color) {
+
+		BufferedImage diffImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+		for (int i = 0; i < diffImage.getWidth(); i++) {
+			for (int j = 0; j < diffImage.getHeight(); j++) {
+				Position pos = new Position(i, j);
+				Color tempColor = getColor(image, pos);
+				Color diffColor = new Color(Math.abs(tempColor.getRed() - color.getRed()), Math.abs(tempColor
+						.getGreen() - color.getGreen()), Math.abs(tempColor.getBlue() - color.getBlue()));
 				diffImage.setRGB(i, j, diffColor.getRGB());
 			}
 		}

@@ -5,19 +5,19 @@ import java.io.File;
 public class TrackingImage {
 
 	private File file;
-	private Ball ball;
+	private Position position;
 
-	public TrackingImage(File file, Ball ball) {
+	public TrackingImage(File file, Position position) {
 		setFile(file);
-		setBall(ball);
+		setPosition(position);
 	}
 
-	public Ball getBall() {
-		return this.ball;
+	public Position getPosition() {
+		return this.position;
 	}
 
-	public void setBall(Ball ball) {
-		this.ball = ball;
+	public void setPosition(Position ball) {
+		this.position = ball;
 	}
 
 	public File getFile() {

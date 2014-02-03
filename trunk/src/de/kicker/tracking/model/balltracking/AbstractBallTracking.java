@@ -7,10 +7,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import de.kicker.tracking.model.Ball;
+import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
 
-public abstract class AbstractBallTracking {
+public abstract class AbstractBallTracking implements IBallTracking {
 
 	protected Map<Integer, TrackingImage> trackedImages;
 
@@ -19,9 +19,10 @@ public abstract class AbstractBallTracking {
 	}
 
 	protected AbstractBallTracking(Map<Integer, TrackingImage> trackedImages) {
-		this.trackedImages = trackedImages;
+		setTrackedImages(trackedImages);
 	}
 
+	@Override
 	public Collection<TrackingImage> getAllTrackedImages() {
 		Collection<TrackingImage> images = new LinkedList<>();
 		for (TrackingImage image : trackedImages.values()) {
@@ -30,16 +31,24 @@ public abstract class AbstractBallTracking {
 		return images;
 	}
 
+	@Override
 	public Set<Integer> getTrackedIndizes() {
 		return trackedImages.keySet();
 	}
 
+	@Override
 	public TrackingImage getTrackingImage(int index) {
 		return trackedImages.get(index);
 	}
 
-	public void assignBallToFile(int index, File file, Ball ball) {
-		TrackingImage image = new TrackingImage(file, ball);
+	@Override
+	public void setTrackedImages(Map<Integer, TrackingImage> trackedImages) {
+		this.trackedImages = trackedImages;
+	}
+
+	@Override
+	public void assignBallToFile(int index, File file, Position position) {
+		TrackingImage image = new TrackingImage(file, position);
 		trackedImages.put(index, image);
 	}
 
