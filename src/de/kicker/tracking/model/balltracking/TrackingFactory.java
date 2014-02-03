@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.xml.XMLLayer;
@@ -18,16 +17,32 @@ public class TrackingFactory {
 	private int initialIndex;
 	private int currentIndex;
 
-	public AutomaticBallTracking autoBallTracking;
-	public ManualBallTracking manualBallTracking;
+	private IAutomaticBallTracking autoBallTracking;
+	private ManualBallTracking manualBallTracking;
 
 	public TrackingFactory(String directory, BallShape ballShape, int initialIndex, int currentIndex) {
 		autoBallTracking = new AutomaticBallTracking();
 		manualBallTracking = new ManualBallTracking();
 		setDirectory(directory);
-		setBallShape(null);
+		setBallShape(ballShape);
 		setInitialIndex(initialIndex);
 		setCurrentIndex(currentIndex);
+	}
+
+	public IAutomaticBallTracking getAutomaticBallTracking() {
+		return autoBallTracking;
+	}
+
+	public void setAutomaticBallTracking(IAutomaticBallTracking ballTracking) {
+		this.autoBallTracking = ballTracking;
+	}
+
+	public ManualBallTracking getManualBallTracking() {
+		return manualBallTracking;
+	}
+
+	public void setManualBallTracking(ManualBallTracking ballTracking) {
+		this.manualBallTracking = ballTracking;
 	}
 
 	public String getDirectory() {
@@ -62,16 +77,17 @@ public class TrackingFactory {
 		this.currentIndex = index;
 	}
 
+	/**
+	 * 
+	 * @param index
+	 * @param file
+	 * @param position
+	 */
 	public void initTracking(int index, File file, Position position) {
-		if (getBallShape() != null) {
-			Ball ball = new Ball(position, getBallShape());
-			autoBallTracking.assignBallToFile(index, file, ball);
-			manualBallTracking.assignBallToFile(index, file, ball);
-			setInitialIndex(index);
-			setCurrentIndex(index);
-		} else {
-			logger.warn("BallShape element of TrackingFactory is null!");
-		}
+		autoBallTracking.assignBallToFile(index, file, position);
+		manualBallTracking.assignBallToFile(index, file, position);
+		setInitialIndex(index);
+		setCurrentIndex(index);
 	}
 
 	public void trackAuto(int index, File file) {
@@ -89,11 +105,7 @@ public class TrackingFactory {
 	}
 
 	public void trackManual(int index, File file, Position position) {
-		if (getBallShape() != null) {
-			manualBallTracking.assignBallToFile(index, file, new Ball(position, getBallShape()));
-		} else {
-			logger.warn("BallShape element of TrackingFactory is null!");
-		}
+		manualBallTracking.assignBallToFile(index, file, position);
 	}
 
 	public void exportToXML(File file) {
@@ -104,8 +116,8 @@ public class TrackingFactory {
 		}
 	}
 
-	public static TrackingFactory importFromXML(File file) {
-		TrackingFactory factory = XMLLayer.readBallTracking(file);
+	public static TrackingFactory importFromXML(File file, Class<? extends IAutomaticBallTracking> automaticClass) {
+		TrackingFactory factory = XMLLayer.readBallTracking(file, automaticClass);
 		return factory;
 	}
 

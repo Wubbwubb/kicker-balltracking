@@ -8,7 +8,6 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
@@ -17,7 +16,7 @@ import de.kicker.tracking.model.xml.BallTrackingType;
 import de.kicker.tracking.util.AWTUtil;
 
 @BallTrackingType(value = "auto")
-public class AutomaticBallTracking extends AbstractBallTracking {
+public class AutomaticBallTracking extends AbstractBallTracking implements IAutomaticBallTracking {
 
 	private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
 	private static final Settings settings = Settings.getInstance();
@@ -27,22 +26,21 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 	private static final int Y_MIN = 106;
 	private static final int Y_MAX = 378;
 
-	private int searchFails;
+	private int searchFails = 0;
 
 	public AutomaticBallTracking() {
 		super();
-		searchFails = 0;
 	}
 
 	public AutomaticBallTracking(Map<Integer, TrackingImage> trackedImages) {
 		super(trackedImages);
 	}
 
+	@Override
 	public void trackFile(int index, File file, BallShape ballShape) {
 		Position position = calculatePosition(index, file, ballShape);
 		logger.debug("calculated position: " + position.toString());
-		Ball ball = new Ball(position, ballShape);
-		assignBallToFile(index, file, ball);
+		assignBallToFile(index, file, position);
 	}
 
 	private Position calculatePosition(int index, File file, BallShape ballShape) {
@@ -54,15 +52,20 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 		try {
 
 			TrackingImage preTrackingImage = getTrackingImage(index - 1);
-			Position prePosition = preTrackingImage.getBall().getPosition();
+			Position prePosition = preTrackingImage.getPosition();
 
-			// BufferedImage preImage =
-			// AWTUtil.getImageFromFile(preTrackingImage.getFile());
+			BufferedImage preImage = AWTUtil.getImageFromFile(preTrackingImage.getFile());
 			BufferedImage actImage = AWTUtil.getImageFromFile(file);
 			// BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage,
 			// actImage);
 			BufferedImage negImage = AWTUtil.getNegativeImage(actImage, ballShape.getAWTColor(),
 					settings.getMaxColorDistance());
+
+			BufferedImage diff1 = AWTUtil.getDifferenceImage(preImage, ballShape.getAWTColor());
+			BufferedImage diff2 = AWTUtil.getDifferenceImage(actImage, ballShape.getAWTColor());
+
+			BufferedImage diffDiff = AWTUtil.getDifferenceImage(diff1, diff2);
+			AWTUtil.writeImageToFile(diffDiff, AWTUtil.getOutputFile(index, "diffDiff"));
 
 			if (settings.createDebugImages()) {
 				File debugFile = AWTUtil.getOutputFile(index, "negative");
@@ -76,7 +79,7 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 				prePosition = resetPrePosition(bools, prePosition);
 				if (prePosition == null) {
 					logger.debug("reset failed!");
-					prePosition = preTrackingImage.getBall().getPosition();
+					prePosition = preTrackingImage.getPosition();
 				}
 			}
 
@@ -201,7 +204,7 @@ public class AutomaticBallTracking extends AbstractBallTracking {
 		return null;
 	}
 
-	public Position getPositionAroundPrePosition(boolean[][] negImage, Position prePosition) {
+	private Position getPositionAroundPrePosition(boolean[][] negImage, Position prePosition) {
 
 		int initialX = prePosition.getX();
 		int initialY = prePosition.getY();

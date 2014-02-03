@@ -1,8 +1,7 @@
 <!ELEMENT balltracking (ballshape,image+)>
 <!ELEMENT ballshape (color)>
 <!ELEMENT color EMPTY>
-<!ELEMENT image (ball)>
-<!ELEMENT ball (position)>
+<!ELEMENT image (position)>
 <!ELEMENT position EMPTY>
 
 <!ATTLIST balltracking directory CDATA #REQUIRED>

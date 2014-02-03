@@ -20,43 +20,65 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import de.kicker.tracking.model.Ball;
 import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
 import de.kicker.tracking.model.balltracking.AutomaticBallTracking;
+import de.kicker.tracking.model.balltracking.IAutomaticBallTracking;
 import de.kicker.tracking.model.balltracking.ManualBallTracking;
 import de.kicker.tracking.model.balltracking.TrackingFactory;
 import de.kicker.tracking.model.settings.Settings;
 
-public class XMLLayer {
+public final class XMLLayer {
 
 	private static Logger logger = Logger.getLogger(XMLLayer.class);
 	private static Settings settings = Settings.getInstance();
+
+	private static final String ELEMENT_BALLTRACKING = "balltracking";
+	private static final String ELEMENT_BALLSHAPE = "ballshape";
+	private static final String ELEMENT_COLOR = "color";
+	private static final String ELEMENT_IMAGE = "image";
+	private static final String ELEMENT_POSITION = "position";
+
+	private static final String ATTRIBUTE_DIRECTORY = "directory";
+	private static final String ATTRIBUTE_RADIUS = "radius";
+	private static final String ATTRIBUTE_RED = "red";
+	private static final String ATTRIBUTE_GREEN = "green";
+	private static final String ATTRIBUTE_BLUE = "blue";
+	private static final String ATTRIBUTE_OPACITY = "opacity";
+	private static final String ATTRIBUTE_INDEX = "index";
+	private static final String ATTRIBUTE_FILE = "file";
+	private static final String ATTRIBUTE_TYPE = "type";
+	private static final String ATTRIBUTE_X = "x";
+	private static final String ATTRIBUTE_Y = "y";
+
+	private XMLLayer() {
+	}
 
 	public static void exportToXML(TrackingFactory trackingFactory, String file) {
 
 		try {
 
-			Element root = new Element("balltracking");
+			Element root = new Element(ELEMENT_BALLTRACKING);
 			Document doc = new Document(root);
-			// TODO: DTD-validation uncomment
+			// TODO: uncomment DTD-validation
 			@SuppressWarnings("unused")
-			DocType docType = new DocType("balltracking", settings.getInstallDir() + "/xml/balltracking.dtd");
+			DocType docType = new DocType(ELEMENT_BALLTRACKING, settings.getInstallDir() + "/xml/balltracking.dtd");
 			// doc.setDocType(docType);
-			Attribute dirAtt = new Attribute("directory", trackingFactory.getDirectory());
+			Attribute dirAtt = new Attribute(ATTRIBUTE_DIRECTORY, trackingFactory.getDirectory());
 			root.setAttribute(dirAtt);
 
-			Element shapeEl = new Element("ballshape");
-			Attribute radiusAtt = new Attribute("radius", trackingFactory.getBallShape().getRadius() + "");
+			Element shapeEl = new Element(ELEMENT_BALLSHAPE);
+			Attribute radiusAtt = new Attribute(ATTRIBUTE_RADIUS, trackingFactory.getBallShape().getRadius() + "");
 
 			shapeEl.setAttribute(radiusAtt);
 
-			Element colorEl = new Element("color");
-			Attribute rAtt = new Attribute("red", trackingFactory.getBallShape().getFXColor().getRed() + "");
-			Attribute gAtt = new Attribute("green", trackingFactory.getBallShape().getFXColor().getGreen() + "");
-			Attribute bAtt = new Attribute("blue", trackingFactory.getBallShape().getFXColor().getBlue() + "");
-			Attribute oAtt = new Attribute("opacity", trackingFactory.getBallShape().getFXColor().getOpacity() + "");
+			Element colorEl = new Element(ELEMENT_COLOR);
+			Attribute rAtt = new Attribute(ATTRIBUTE_RED, trackingFactory.getBallShape().getFXColor().getRed() + "");
+			Attribute gAtt = new Attribute(ATTRIBUTE_GREEN, trackingFactory.getBallShape().getFXColor().getGreen() + "");
+			Attribute bAtt = new Attribute(ATTRIBUTE_BLUE, trackingFactory.getBallShape().getFXColor().getBlue() + "");
+			Attribute oAtt = new Attribute(ATTRIBUTE_OPACITY, trackingFactory.getBallShape().getFXColor().getOpacity()
+					+ "");
 
 			colorEl.setAttribute(rAtt);
 			colorEl.setAttribute(gAtt);
@@ -67,63 +89,57 @@ public class XMLLayer {
 			root.addContent(shapeEl);
 
 			String type = AutomaticBallTracking.class.getAnnotation(BallTrackingType.class).value();
-			Set<Integer> indizes = trackingFactory.autoBallTracking.getTrackedIndizes();
+			Set<Integer> indizes = trackingFactory.getAutomaticBallTracking().getTrackedIndizes();
 			for (int index : indizes) {
-				TrackingImage image = trackingFactory.autoBallTracking.getTrackingImage(index);
+				TrackingImage image = trackingFactory.getAutomaticBallTracking().getTrackingImage(index);
 
-				Element imgEl = new Element("image");
+				Element imgEl = new Element(ELEMENT_IMAGE);
 
-				Attribute indexAtt = new Attribute("index", index + "");
-				Attribute fileAtt = new Attribute("file", image.getFile().getName());
-				Attribute typeAtt = new Attribute("type", type);
+				Attribute indexAtt = new Attribute(ATTRIBUTE_INDEX, index + "");
+				Attribute fileAtt = new Attribute(ATTRIBUTE_FILE, image.getFile().getName());
+				Attribute typeAtt = new Attribute(ATTRIBUTE_TYPE, type);
 
 				imgEl.setAttribute(indexAtt);
 				imgEl.setAttribute(fileAtt);
 				imgEl.setAttribute(typeAtt);
 
-				Element ballEl = new Element("ball");
-				Element posEl = new Element("position");
+				Element posEl = new Element(ELEMENT_POSITION);
 
-				Attribute xAtt = new Attribute("x", image.getBall().getPosition().getX() + "");
-				Attribute yAtt = new Attribute("y", image.getBall().getPosition().getY() + "");
+				Attribute xAtt = new Attribute(ATTRIBUTE_X, image.getPosition().getX() + "");
+				Attribute yAtt = new Attribute(ATTRIBUTE_Y, image.getPosition().getY() + "");
 
 				posEl.setAttribute(xAtt);
 				posEl.setAttribute(yAtt);
 
-				ballEl.addContent(posEl);
-
-				imgEl.addContent(ballEl);
+				imgEl.addContent(posEl);
 
 				root.addContent(imgEl);
 			}
 
 			type = ManualBallTracking.class.getAnnotation(BallTrackingType.class).value();
-			indizes = trackingFactory.manualBallTracking.getTrackedIndizes();
+			indizes = trackingFactory.getManualBallTracking().getTrackedIndizes();
 			for (int index : indizes) {
-				TrackingImage image = trackingFactory.manualBallTracking.getTrackingImage(index);
+				TrackingImage image = trackingFactory.getManualBallTracking().getTrackingImage(index);
 
-				Element imgEl = new Element("image");
+				Element imgEl = new Element(ELEMENT_IMAGE);
 
-				Attribute indexAtt = new Attribute("index", index + "");
-				Attribute fileAtt = new Attribute("file", image.getFile().getName());
-				Attribute typeAtt = new Attribute("type", type);
+				Attribute indexAtt = new Attribute(ATTRIBUTE_INDEX, index + "");
+				Attribute fileAtt = new Attribute(ATTRIBUTE_FILE, image.getFile().getName());
+				Attribute typeAtt = new Attribute(ATTRIBUTE_TYPE, type);
 
 				imgEl.setAttribute(indexAtt);
 				imgEl.setAttribute(fileAtt);
 				imgEl.setAttribute(typeAtt);
 
-				Element ballEl = new Element("ball");
-				Element posEl = new Element("position");
+				Element posEl = new Element(ELEMENT_POSITION);
 
-				Attribute xAtt = new Attribute("x", image.getBall().getPosition().getX() + "");
-				Attribute yAtt = new Attribute("y", image.getBall().getPosition().getY() + "");
+				Attribute xAtt = new Attribute(ATTRIBUTE_X, image.getPosition().getX() + "");
+				Attribute yAtt = new Attribute(ATTRIBUTE_Y, image.getPosition().getY() + "");
 
 				posEl.setAttribute(xAtt);
 				posEl.setAttribute(yAtt);
 
-				ballEl.addContent(posEl);
-
-				imgEl.addContent(ballEl);
+				imgEl.addContent(posEl);
 
 				root.addContent(imgEl);
 			}
@@ -143,7 +159,8 @@ public class XMLLayer {
 
 	}
 
-	public static TrackingFactory readBallTracking(File xmlFile) {
+	public static <T extends IAutomaticBallTracking> TrackingFactory readBallTracking(File xmlFile,
+			Class<T> automaticClass) {
 
 		// TODO: choose the SAXBuilder with DTD-validation
 		// SAXBuilder builder = new SAXBuilder(XMLReaders.DTDVALIDATING);
@@ -158,48 +175,51 @@ public class XMLLayer {
 
 			Document doc = builder.build(xmlFile);
 			Element root = doc.getRootElement();
-			if (root == null || !"balltracking".equals(root.getName())) {
+			if (root == null || !ELEMENT_BALLTRACKING.equals(root.getName())) {
 				throw new IOException(xmlFile + " has wrong structure!");
 			}
-			dir = root.getAttributeValue("directory");
+			dir = root.getAttributeValue(ATTRIBUTE_DIRECTORY);
 
-			Element shapeEl = root.getChild("ballshape");
-			int radius = Integer.parseInt(shapeEl.getAttributeValue("radius"));
+			Element shapeEl = root.getChild(ELEMENT_BALLSHAPE);
+			int radius = Integer.parseInt(shapeEl.getAttributeValue(ATTRIBUTE_RADIUS));
 
-			Element colorEl = shapeEl.getChild("color");
-			double red = Double.parseDouble(colorEl.getAttributeValue("red"));
-			double green = Double.parseDouble(colorEl.getAttributeValue("green"));
-			double blue = Double.parseDouble(colorEl.getAttributeValue("blue"));
-			double opacity = Double.parseDouble(colorEl.getAttributeValue("opacity"));
+			Element colorEl = shapeEl.getChild(ELEMENT_COLOR);
+			double red = Double.parseDouble(colorEl.getAttributeValue(ATTRIBUTE_RED));
+			double green = Double.parseDouble(colorEl.getAttributeValue(ATTRIBUTE_GREEN));
+			double blue = Double.parseDouble(colorEl.getAttributeValue(ATTRIBUTE_BLUE));
+			double opacity = Double.parseDouble(colorEl.getAttributeValue(ATTRIBUTE_OPACITY));
 			BallShape ballShape = new BallShape(radius, new Color(red, green, blue, opacity));
 
-			List<Element> images = root.getChildren("image");
+			List<Element> images = root.getChildren(ELEMENT_IMAGE);
 
-			String autoType = AutomaticBallTracking.class.getAnnotation(BallTrackingType.class).value();
-			String manualType = ManualBallTracking.class.getAnnotation(BallTrackingType.class).value();
+			BallTrackingType autoType = automaticClass.getAnnotation(BallTrackingType.class);
+			BallTrackingType manualType = ManualBallTracking.class.getAnnotation(BallTrackingType.class);
+
+			if (autoType == null) {
+				logger.error("no BallTrackingType defined for " + automaticClass.getName());
+			}
 
 			int initialIndex = Integer.MAX_VALUE;
 			int currentIndex = Integer.MIN_VALUE;
 
 			for (Element imgEl : images) {
 
-				int index = Integer.parseInt(imgEl.getAttributeValue("index"));
-				File file = new File(dir + File.separator + imgEl.getAttributeValue("file"));
+				int index = Integer.parseInt(imgEl.getAttributeValue(ATTRIBUTE_INDEX));
+				File file = new File(dir + File.separator + imgEl.getAttributeValue(ATTRIBUTE_FILE));
 
-				Element ballEl = imgEl.getChild("ball");
-				Element posEl = ballEl.getChild("position");
-				int x = Integer.parseInt(posEl.getAttributeValue("x"));
-				int y = Integer.parseInt(posEl.getAttributeValue("y"));
+				Element posEl = imgEl.getChild(ELEMENT_POSITION);
+				int x = Integer.parseInt(posEl.getAttributeValue(ATTRIBUTE_X));
+				int y = Integer.parseInt(posEl.getAttributeValue(ATTRIBUTE_Y));
 
-				Ball ball = new Ball(new Position(x, y), ballShape);
+				Position position = new Position(x, y);
 
-				TrackingImage image = new TrackingImage(file, ball);
-				String type = imgEl.getAttributeValue("type");
+				TrackingImage image = new TrackingImage(file, position);
+				String type = imgEl.getAttributeValue(ATTRIBUTE_TYPE);
 
-				if (autoType.equals(type)) {
+				if (autoType.value().equals(type)) {
 					autoTrackedImages.put(index, image);
 					currentIndex = Math.max(currentIndex, index);
-				} else if (manualType.equals(type)) {
+				} else if (manualType.value().equals(type)) {
 					manualTrackedImages.put(index, image);
 				}
 
@@ -207,9 +227,12 @@ public class XMLLayer {
 
 			}
 
+			T autoTracking = automaticClass.newInstance();
+			autoTracking.setTrackedImages(autoTrackedImages);
+
 			factory = new TrackingFactory(dir, ballShape, initialIndex, currentIndex);
-			factory.autoBallTracking = new AutomaticBallTracking(autoTrackedImages);
-			factory.manualBallTracking = new ManualBallTracking(manualTrackedImages);
+			factory.setAutomaticBallTracking(autoTracking);
+			factory.setManualBallTracking(new ManualBallTracking(manualTrackedImages));
 
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);

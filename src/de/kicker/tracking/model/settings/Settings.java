@@ -22,8 +22,6 @@ public final class Settings {
 
 	// ##### window settings #####
 	private String windowTitle;
-	private int windowWidth;
-	private int windowHeight;
 	private String windowIcon;
 
 	// ##### image settings #####
@@ -50,6 +48,13 @@ public final class Settings {
 	private String debugDirectory;
 	private boolean createDebugImages;
 
+	public static Settings getInstance() {
+		if (singleton == null) {
+			singleton = new Settings();
+		}
+		return singleton;
+	}
+
 	private Settings() {
 		InputStream fIn = null;
 		try {
@@ -62,8 +67,6 @@ public final class Settings {
 			setInstallDir(getProperty("install_dir", ""));
 
 			setWindowTitle(getProperty("window_title", "Kicker BallTracking"));
-			setWindowWidth(getIntProperty("window_width", 1200));
-			setWindowHeight(getIntProperty("window_height", 900));
 			setWindowIcon(getProperty("window_icon", "images/icon.png"));
 
 			setImageDir(getProperty("image_dir", "E:" + File.separator + "Praktikum Master" + File.separator
@@ -135,13 +138,6 @@ public final class Settings {
 		return value;
 	}
 
-	public static Settings getInstance() {
-		if (singleton == null) {
-			singleton = new Settings();
-		}
-		return singleton;
-	}
-
 	public String getInstallDir() {
 		return installDir;
 	}
@@ -156,22 +152,6 @@ public final class Settings {
 
 	private void setWindowTitle(String windowTitle) {
 		this.windowTitle = windowTitle;
-	}
-
-	public int getWindowWidth() {
-		return windowWidth;
-	}
-
-	private void setWindowWidth(int windowWidth) {
-		this.windowWidth = windowWidth;
-	}
-
-	public int getWindowHeight() {
-		return windowHeight;
-	}
-
-	private void setWindowHeight(int windowHeight) {
-		this.windowHeight = windowHeight;
 	}
 
 	public String getImageDir() {
