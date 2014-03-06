@@ -21,8 +21,8 @@ public class TrackingFactory {
 	private ManualBallTracking manualBallTracking;
 
 	public TrackingFactory(String directory, BallShape ballShape, int initialIndex, int currentIndex) {
-		autoBallTracking = new AutomaticBallTracking();
-		manualBallTracking = new ManualBallTracking();
+		setAutomaticBallTracking(new AutomaticBallTracking());
+		setManualBallTracking(new ManualBallTracking());
 		setDirectory(directory);
 		setBallShape(ballShape);
 		setInitialIndex(initialIndex);
