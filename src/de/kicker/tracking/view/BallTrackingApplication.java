@@ -108,7 +108,7 @@ public class BallTrackingApplication extends Application {
 
 		VBox vboxMain = FXUtil.getVBox(-1, -1, -1);
 		vboxMain.setId("vboxMain");
-		
+
 		borderPaneMain = new BorderPane();
 		borderPaneMain.setId("borderPaneMain");
 
@@ -534,7 +534,7 @@ public class BallTrackingApplication extends Application {
 					Position from = null;
 					for (TrackingImage image : images) {
 						Position to = image.getPosition();
-						addMarker(image, Color.RED, null);
+						addMarker(image, settings.getAutoColor(), null);
 						if (from != null) {
 							addLine(from, to, Color.RED);
 						}
@@ -543,7 +543,7 @@ public class BallTrackingApplication extends Application {
 
 					images = trackingFactory.getManualBallTracking().getAllTrackedImages();
 					for (TrackingImage image : images) {
-						addMarker(image, Color.BLUE, null);
+						addMarker(image, settings.getManualColor(), null);
 					}
 
 					logger.info("show path true");
@@ -610,14 +610,14 @@ public class BallTrackingApplication extends Application {
 
 						Circle circle = new Circle(initX, initY, radius);
 						circle.setFill(null);
-						circle.setStroke(Color.BLUE);
+						circle.setStroke(settings.getManualColor());
 						circle.setStrokeWidth(1);
 
 						trackingFactory.trackManual(currentIndex, currentFile, pos);
 
 						TrackingImage img = trackingFactory.getManualBallTracking().getTrackingImage(currentIndex);
 						if (img != null) {
-							addMarker(img, Color.BLUE, null);
+							addMarker(img, settings.getManualColor(), null);
 						} else {
 							manualCircle = circle;
 							imgAnchor.getChildren().add(manualCircle);
@@ -693,7 +693,7 @@ public class BallTrackingApplication extends Application {
 
 						Circle circle = new Circle(initX, initY, radius);
 						circle.setFill(null);
-						circle.setStroke(Color.RED);
+						circle.setStroke(settings.getAutoColor());
 						circle.setStrokeWidth(1);
 
 						PixelReader pixelReader = imgView.getImage().getPixelReader();
@@ -844,6 +844,10 @@ public class BallTrackingApplication extends Application {
 	private void addMarker(TrackingImage image, Color colorBorder, Color colorFill) {
 
 		Position pos = image.getPosition();
+		if (pos.isNotFound()) {
+			return;
+		}
+
 		int initX = pos.getX();
 		int initY = pos.getY();
 
@@ -1021,7 +1025,7 @@ public class BallTrackingApplication extends Application {
 		if (trackingFactory != null) {
 			TrackingImage atrImage = trackingFactory.getAutomaticBallTracking().getTrackingImage(currentIndex);
 			if (atrImage != null) {
-				addMarker(atrImage, Color.RED, null);
+				addMarker(atrImage, settings.getAutoColor(), null);
 				if (addLine) {
 					TrackingImage patrImage = trackingFactory.getAutomaticBallTracking().getTrackingImage(
 							currentIndex - 1);
@@ -1032,7 +1036,7 @@ public class BallTrackingApplication extends Application {
 			}
 			TrackingImage mtrImage = trackingFactory.getManualBallTracking().getTrackingImage(currentIndex);
 			if (mtrImage != null) {
-				addMarker(mtrImage, Color.BLUE, null);
+				addMarker(mtrImage, settings.getManualColor(), null);
 			}
 		}
 	}

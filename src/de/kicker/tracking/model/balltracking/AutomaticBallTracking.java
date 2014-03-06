@@ -12,10 +12,12 @@ import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
 import de.kicker.tracking.model.settings.Settings;
+import de.kicker.tracking.model.xml.BallTrackingColor;
 import de.kicker.tracking.model.xml.BallTrackingType;
 import de.kicker.tracking.util.AWTUtil;
 
 @BallTrackingType(value = "auto")
+@BallTrackingColor(rgb = -65536)
 public class AutomaticBallTracking extends AbstractBallTracking implements IAutomaticBallTracking {
 
 	private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
@@ -52,38 +54,42 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 		try {
 
 			TrackingImage preTrackingImage = getTrackingImage(index - 1);
-			Position prePosition = preTrackingImage.getPosition();
+			Position prePosition = getValidePrePosition(index);
 
 			BufferedImage preImage = AWTUtil.getImageFromFile(preTrackingImage.getFile());
 			BufferedImage actImage = AWTUtil.getImageFromFile(file);
-			// BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage,
-			// actImage);
-			BufferedImage negImage = AWTUtil.getNegativeImage(actImage, ballShape.getAWTColor(),
+
+			BufferedImage binaryImage = AWTUtil.getBinaryImage(actImage, ballShape.getAWTColor(),
 					settings.getMaxColorDistance());
 
-			BufferedImage diff1 = AWTUtil.getDifferenceImage(preImage, ballShape.getAWTColor());
-			BufferedImage diff2 = AWTUtil.getDifferenceImage(actImage, ballShape.getAWTColor());
-
-			BufferedImage diffDiff = AWTUtil.getDifferenceImage(diff1, diff2);
-			AWTUtil.writeImageToFile(diffDiff, AWTUtil.getOutputFile(index, "diffDiff"));
-
 			if (settings.createDebugImages()) {
-				File debugFile = AWTUtil.getOutputFile(index, "negative");
-				AWTUtil.writeImageToFile(negImage, debugFile);
+
+				BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage, actImage);
+				AWTUtil.writeImageToFile(diffImage, AWTUtil.getOutputFile(index, "diff"));
+
+				AWTUtil.writeImageToFile(binaryImage, AWTUtil.getOutputFile(index, "negative"));
+
+				BufferedImage diff1 = AWTUtil.getDifferenceImage(preImage, ballShape.getAWTColor());
+				BufferedImage diff2 = AWTUtil.getDifferenceImage(actImage, ballShape.getAWTColor());
+
+				BufferedImage diffDiff = AWTUtil.getDifferenceImage(diff1, diff2);
+				AWTUtil.writeImageToFile(diffDiff, AWTUtil.getOutputFile(index, "diffDiff"));
 			}
 
-			boolean[][] bools = AWTUtil.getWhiteBooleans(negImage);
+			boolean[][] bools = AWTUtil.getWhiteBooleans(binaryImage);
 
-			if (searchFails >= settings.getSearchFailThreshold()) {
+			if (searchFails >= settings.getSearchFailThreshold() || prePosition.isNotFound()) {
 				logger.debug("reset prePosition");
 				prePosition = resetPrePosition(bools, prePosition);
-				if (prePosition == null) {
+				if (prePosition.isNotFound()) {
 					logger.debug("reset failed!");
-					prePosition = preTrackingImage.getPosition();
+					searchFails++;
+					logger.debug("fail " + searchFails);
+					return Position.POSITION_NOT_FOUND;
 				}
 			}
 
-			if (Color.WHITE.equals(AWTUtil.getColor(negImage, prePosition))) {
+			if (Color.WHITE.equals(AWTUtil.getColor(binaryImage, prePosition))) {
 
 				logger.debug("detect position around prePosition");
 				searchFails = 0;
@@ -93,7 +99,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 				logger.debug("prePosition is not marked");
 				Position nextBallPosition = findNextBallPosition(bools, prePosition);
-				if (nextBallPosition != null) {
+				if (!nextBallPosition.isNotFound()) {
 					logger.debug("next position: " + nextBallPosition.toString());
 					searchFails = 0;
 					return getPositionAroundPrePosition(bools, nextBallPosition);
@@ -103,7 +109,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 			searchFails++;
 			logger.debug("fail " + searchFails);
-			return prePosition;
+			return Position.POSITION_NOT_FOUND;
 
 		} catch (Exception e) {
 			logger.error("error in calculatePosition at index: " + index, e);
@@ -112,10 +118,25 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 		return position;
 	}
 
+	private Position getValidePrePosition(int index) {
+		Position prePosition = Position.POSITION_NOT_FOUND;
+		for (index--; index >= 0; index--) {
+			TrackingImage trackedImage = getTrackingImage(index);
+			if (trackedImage == null) {
+				break;
+			}
+			if (!trackedImage.getPosition().isNotFound()) {
+				prePosition = trackedImage.getPosition();
+				break;
+			}
+		}
+		return prePosition;
+	}
+
 	private Position resetPrePosition(boolean[][] negImage, Position prePosition) {
 
-		int initialX = prePosition.getX();
-		int initialY = prePosition.getY();
+		int initialX = prePosition.isNotFound() ? X_MAX - X_MIN : prePosition.getX();
+		int initialY = prePosition.isNotFound() ? Y_MAX - Y_MIN : prePosition.getY();
 
 		int k = 1;
 		while (true) {
@@ -147,7 +168,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 			k++;
 		}
 
-		return null;
+		return Position.POSITION_NOT_FOUND;
 	}
 
 	private boolean isBallIndicator(boolean[][] negImage, Position prePosition) {
@@ -201,7 +222,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 			k++;
 		}
 
-		return null;
+		return Position.POSITION_NOT_FOUND;
 	}
 
 	private Position getPositionAroundPrePosition(boolean[][] negImage, Position prePosition) {

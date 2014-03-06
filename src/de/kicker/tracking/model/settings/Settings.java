@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import javafx.scene.input.KeyCombination;
+import javafx.scene.paint.Color;
 
 public final class Settings {
 
@@ -34,6 +35,9 @@ public final class Settings {
 	private String fileChooserTitle;
 
 	private int ballRadius;
+
+	private Color manualColor;
+	private Color autoColor;
 
 	private KeyCombination keyCombinationBtnPrev;
 	private KeyCombination keyCombinationBtnNext;
@@ -92,6 +96,9 @@ public final class Settings {
 
 			setDebugDirectory(getProperty("debug_dir", "E:" + File.separator + "Praktikum Master"));
 			setCreateDebugImages(getBooleanProperty("create_debug_images", false));
+
+			setAutoColor(getProperty("auto_color", "#FF0000"));
+			setManualColor(getProperty("manual_color", "#0000FF"));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -306,5 +313,21 @@ public final class Settings {
 
 	private void setCreateDebugImages(boolean createDebugImages) {
 		this.createDebugImages = createDebugImages;
+	}
+
+	public Color getManualColor() {
+		return manualColor;
+	}
+
+	private void setManualColor(String manualColor) {
+		this.manualColor = Color.web(manualColor);
+	}
+
+	public Color getAutoColor() {
+		return autoColor;
+	}
+
+	private void setAutoColor(String autoColor) {
+		this.autoColor = Color.web(autoColor);
 	}
 }

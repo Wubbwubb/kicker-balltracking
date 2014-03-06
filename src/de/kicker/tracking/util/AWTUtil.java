@@ -78,13 +78,13 @@ public final class AWTUtil {
 		return new Color(image.getRGB(position.getX(), position.getY()));
 	}
 
-	public static BufferedImage getNegativeImage(BufferedImage image, Color goalColor, double maxDistance) {
+	public static BufferedImage getBinaryImage(BufferedImage image, Color goalColor, double maxDistance) {
 
-		BufferedImage negativeImage = new BufferedImage(image.getWidth(), image.getHeight(),
+		BufferedImage binaryImage = new BufferedImage(image.getWidth(), image.getHeight(),
 				BufferedImage.TYPE_BYTE_GRAY);
 
-		for (int i = 0; i < negativeImage.getWidth(); i++) {
-			for (int j = 0; j < negativeImage.getHeight(); j++) {
+		for (int i = 0; i < binaryImage.getWidth(); i++) {
+			for (int j = 0; j < binaryImage.getHeight(); j++) {
 				Position pos = new Position(i, j);
 				Color orgColor = getColor(image, pos);
 				Color newColor;
@@ -93,11 +93,11 @@ public final class AWTUtil {
 				} else {
 					newColor = Color.BLACK;
 				}
-				negativeImage.setRGB(i, j, newColor.getRGB());
+				binaryImage.setRGB(i, j, newColor.getRGB());
 			}
 		}
 
-		return negativeImage;
+		return binaryImage;
 	}
 
 	public static boolean colorMatches(Color orgColor, Color goalColor, double maxDistance) {

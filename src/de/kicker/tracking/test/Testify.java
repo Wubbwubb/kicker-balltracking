@@ -29,7 +29,7 @@ public class Testify {
 
 			BufferedImage diff = AWTUtil.getDifferenceImage(diff1, diff2);
 
-			BufferedImage negDiff = AWTUtil.getNegativeImage(diff, color, 150);
+			BufferedImage negDiff = AWTUtil.getBinaryImage(diff, color, 150);
 
 			AWTUtil.writeImageToFile(diff, outFile1);
 			AWTUtil.writeImageToFile(diff1, outFile2);
@@ -39,6 +39,8 @@ public class Testify {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		System.out.println(Color.BLUE.getRGB());
 
 	}
 
