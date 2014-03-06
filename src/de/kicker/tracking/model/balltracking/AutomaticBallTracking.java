@@ -12,12 +12,10 @@ import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
 import de.kicker.tracking.model.TrackingImage;
 import de.kicker.tracking.model.settings.Settings;
-import de.kicker.tracking.model.xml.BallTrackingColor;
 import de.kicker.tracking.model.xml.BallTrackingType;
 import de.kicker.tracking.util.AWTUtil;
 
 @BallTrackingType(value = "auto")
-@BallTrackingColor(rgb = -65536)
 public class AutomaticBallTracking extends AbstractBallTracking implements IAutomaticBallTracking {
 
 	private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
