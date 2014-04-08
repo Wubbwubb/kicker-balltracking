@@ -45,6 +45,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 import org.apache.log4j.Logger;
+import org.opencv.core.Core;
 
 import de.kicker.tracking.model.BallShape;
 import de.kicker.tracking.model.Position;
@@ -91,6 +92,9 @@ public class BallTrackingApplication extends Application {
 	private Position initBallPosition;
 
 	public static void main(String[] args) {
+
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 		String appenderToDelete = settings.isDebugMode() ? "name.file_appender" : "name.console_appender";
 		Logger rootLogger = Logger.getRootLogger();
 		ResourceBundle b = ResourceBundle.getBundle("log4j");

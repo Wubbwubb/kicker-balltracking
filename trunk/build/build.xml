@@ -14,7 +14,7 @@
 		<jar destfile="${dest_dir}/KickerTracking.jar">
 			<manifest>
 				<attribute name="Main-Class" value="de.kicker.tracking.view.BallTrackingApplication" />
-				<attribute name="Class-Path" value=". lib/jdom-2.0.5.jar lib/jfxrt.jar lib/log4j-1.2.15.jar" />
+				<attribute name="Class-Path" value=". lib/jdom-2.0.5.jar lib/jfxrt.jar lib/log4j-1.2.15.jar lib/opencv-248.jar lib/opencv_java248.dll" />
 			</manifest>
 			<fileset dir="${src_dir}/bin" />
 		</jar>
@@ -40,6 +40,8 @@
 		<copy file="${src_dir}/lib/jdom-2.0.5.jar" todir="${dest_dir}/lib" />
 		<copy file="${src_dir}/lib/jfxrt.jar" todir="${dest_dir}/lib" />
 		<copy file="${src_dir}/lib/log4j-1.2.15.jar" todir="${dest_dir}/lib" />
+		<copy file="${src_dir}/lib/opencv-248.jar" todir="${dest_dir}/lib" />
+		<copy file="${src_dir}/lib/opencv_java248.dll" todir="${dest_dir}/lib" />
 
 		<copy file="${src_dir}/properties/settings.properties" todir="${dest_dir}/properties" />
 		<replace file="${dest_dir}/properties/settings.properties" token="INSTALL_DIR" value="${dest_dir}" />

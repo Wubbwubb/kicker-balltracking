@@ -78,17 +78,19 @@ public final class AWTUtil {
 		return new Color(image.getRGB(position.getX(), position.getY()));
 	}
 
-	public static BufferedImage getBinaryImage(BufferedImage image, Color goalColor, double maxDistance) {
+	public static BufferedImage getBinaryImage(BufferedImage image, Color goalColor, double maxDistance, int xMin,
+			int yMin, int xMax, int yMax) {
 
-		BufferedImage binaryImage = new BufferedImage(image.getWidth(), image.getHeight(),
-				BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage binaryImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 
 		for (int i = 0; i < binaryImage.getWidth(); i++) {
 			for (int j = 0; j < binaryImage.getHeight(); j++) {
 				Position pos = new Position(i, j);
 				Color orgColor = getColor(image, pos);
 				Color newColor;
-				if (colorMatches(orgColor, goalColor, maxDistance)) {
+				if (i < xMin || j < yMin || i > xMax || j > yMax) {
+					newColor = Color.BLACK;
+				} else if (colorMatches(orgColor, goalColor, maxDistance)) {
 					newColor = Color.WHITE;
 				} else {
 					newColor = Color.BLACK;
