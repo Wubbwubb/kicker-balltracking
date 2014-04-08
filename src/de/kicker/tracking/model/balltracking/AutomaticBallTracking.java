@@ -58,7 +58,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 			BufferedImage actImage = AWTUtil.getImageFromFile(file);
 
 			BufferedImage binaryImage = AWTUtil.getBinaryImage(actImage, ballShape.getAWTColor(),
-					settings.getMaxColorDistance());
+					settings.getMaxColorDistance(), X_MIN, Y_MIN, X_MAX, Y_MAX);
 
 			if (settings.createDebugImages()) {
 
