@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
-import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -27,12 +26,10 @@ import de.kicker.tracking.model.balltracking.AutomaticBallTracking;
 import de.kicker.tracking.model.balltracking.IAutomaticBallTracking;
 import de.kicker.tracking.model.balltracking.ManualBallTracking;
 import de.kicker.tracking.model.balltracking.TrackingFactory;
-import de.kicker.tracking.model.settings.Settings;
 
 public final class XMLLayer {
 
-	private static Logger logger = Logger.getLogger(XMLLayer.class);
-	private static Settings settings = Settings.getInstance();
+	private static final Logger logger = Logger.getLogger(XMLLayer.class);
 
 	private static final String ELEMENT_BALLTRACKING = "balltracking";
 	private static final String ELEMENT_BALLSHAPE = "ballshape";
@@ -61,10 +58,7 @@ public final class XMLLayer {
 
 			Element root = new Element(ELEMENT_BALLTRACKING);
 			Document doc = new Document(root);
-			// TODO: uncomment DTD-validation
-			@SuppressWarnings("unused")
-			DocType docType = new DocType(ELEMENT_BALLTRACKING, settings.getInstallDir() + "/xml/balltracking.dtd");
-			// doc.setDocType(docType);
+
 			Attribute dirAtt = new Attribute(ATTRIBUTE_DIRECTORY, trackingFactory.getDirectory());
 			root.setAttribute(dirAtt);
 
@@ -236,13 +230,10 @@ public final class XMLLayer {
 
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 		} catch (JDOMException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 		}
 
 		return factory;
