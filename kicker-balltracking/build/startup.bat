@@ -1,1 +1,1 @@
-java -jar KickerTracking.jar
+java -jar KickerTracking.jar -Djava.library.path=lib/java-library-path
