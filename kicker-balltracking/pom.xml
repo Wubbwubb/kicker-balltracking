@@ -82,7 +82,7 @@
 							<outputDirectory>${project.build.directory}/lib/java-library-path</outputDirectory>
 							<resources>
 								<resource>
-									<directory>lib/java-library-path</directory>
+									<directory>lib</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
