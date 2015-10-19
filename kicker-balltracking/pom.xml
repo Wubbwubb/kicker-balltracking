@@ -9,6 +9,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.release.dir>${basedir}/release</project.build.release.dir>
 	</properties>
 
 	<repositories>
@@ -79,10 +80,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/lib/java-library-path</outputDirectory>
+							<outputDirectory>${project.build.release.dir}/properties</outputDirectory>
 							<resources>
 								<resource>
-									<directory>lib</directory>
+									<directory>properties</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
@@ -95,23 +96,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/properties</outputDirectory>
-							<resources>
-								<resource>
-									<directory>properties</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-resources-3</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}</outputDirectory>
+							<outputDirectory>${project.build.release.dir}</outputDirectory>
 							<resources>
 								<resource>
 									<directory>build</directory>
@@ -135,7 +120,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<outputDirectory>${project.build.release.dir}/lib</outputDirectory>
 							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
@@ -145,6 +130,7 @@
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
+					<outputDirectory>${project.build.release.dir}</outputDirectory>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
