@@ -73,7 +73,7 @@
 				<version>2.6</version>
 				<executions>
 					<execution>
-						<id>copy-resources</id>
+						<id>copy-resources-1</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -83,6 +83,38 @@
 							<resources>
 								<resource>
 									<directory>lib</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources-2</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/properties</outputDirectory>
+							<resources>
+								<resource>
+									<directory>properties</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources-3</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>build</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
