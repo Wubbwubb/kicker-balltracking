@@ -1,2 +1,13 @@
-/log/
-/target/
+# ignore eclipse settings
+.classpath
+.project
+.settings/
+
+# ignore IntelliJ settings
+.idea/
+*.iml
+*.iws
+
+# ignore target and log folder
+target/
+log/

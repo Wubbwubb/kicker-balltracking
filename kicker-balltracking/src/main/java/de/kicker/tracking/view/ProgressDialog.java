@@ -2,8 +2,6 @@ package de.kicker.tracking.view;
 
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -16,23 +14,20 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 import org.apache.log4j.Logger;
 
 import de.kicker.tracking.util.FXUtil;
 
-public class ProgressDialog extends Stage {
+class ProgressDialog extends Stage {
 
 	private static final Logger logger = Logger.getLogger(ProgressDialog.class);
 
-	private Label label;
 	private ProgressBar progressBar;
 	private ProgressIndicator progressIndicator;
-	private Button btnCancel;
 	private Task<Void> task;
 
-	public ProgressDialog(int currentIndex, int maxIndex) {
+	ProgressDialog(int currentIndex, int maxIndex) {
 		super(StageStyle.UTILITY);
 		initModality(Modality.APPLICATION_MODAL);
 		initDialog(currentIndex, maxIndex);
@@ -46,23 +41,20 @@ public class ProgressDialog extends Stage {
 		root.setMinWidth(275);
 		root.setPadding(new Insets(20));
 
-		label = new Label("tracking from index " + index + " to index " + maxIndex);
+		Label label = new Label("tracking from index " + index + " to index " + maxIndex);
 		HBox hbox = FXUtil.getHBox(-1, -1, 15);
 		progressBar = new ProgressBar();
 		progressIndicator = new ProgressIndicator();
 
 		progressIndicator.setMinSize(30, 40);
 
-		btnCancel = new Button("cancel");
-		btnCancel.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				if (task != null) {
-					task.cancel(false);
-					close();
-				}
-			}
-		});
+		Button btnCancel = new Button("cancel");
+		btnCancel.setOnAction(event -> {
+            if (task != null) {
+                task.cancel(false);
+                close();
+            }
+        });
 
 		ObservableList<Node> hboxElements = hbox.getChildren();
 		hboxElements.add(progressBar);
@@ -75,20 +67,17 @@ public class ProgressDialog extends Stage {
 
 		setScene(new Scene(root));
 
-		setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override
-			public void handle(WindowEvent event) {
-				if (task != null) {
-					task.cancel(false);
-				}
-			}
-		});
+		setOnCloseRequest(event -> {
+            if (task != null) {
+                task.cancel(false);
+            }
+        });
 
 		setTitle("Track All - Progress");
 
 	}
 
-	public void bindProgressProperty(Task<Void> task) {
+	void bindProgressProperty(Task<Void> task) {
 		this.task = task;
 		progressBar.progressProperty().bind(task.progressProperty());
 		progressIndicator.progressProperty().bind(task.progressProperty());

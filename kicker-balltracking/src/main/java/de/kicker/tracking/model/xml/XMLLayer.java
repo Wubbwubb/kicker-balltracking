@@ -148,7 +148,7 @@ public final class XMLLayer {
 			fileOutput.close();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 
 	}
@@ -228,10 +228,6 @@ public final class XMLLayer {
 			factory.setAutomaticBallTracking(autoTracking);
 			factory.setManualBallTracking(new ManualBallTracking(manualTrackedImages));
 
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		} catch (JDOMException e) {
-			logger.error(e.getMessage(), e);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}

@@ -1,1 +1,1 @@
-java -jar kicker-ball-tracking-1.0.0.jar
+java -Djava.library.path=lib -jar kicker-ball-tracking-1.0.0.jar

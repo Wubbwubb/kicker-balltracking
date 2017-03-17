@@ -14,12 +14,9 @@ public final class Settings {
 
 	private static Settings singleton;
 
-	Properties prop;
+	private Properties prop;
 
 	private boolean debugMode;
-
-	// ##### installation directory #####
-	private String installDir;
 
 	// ##### window settings #####
 	private String windowTitle;
@@ -49,6 +46,11 @@ public final class Settings {
 	private int maxColorDistance;
 	private int radiusSearchSmall;
 
+	private int topBound;
+	private int rightBound;
+	private int bottomBound;
+	private int leftBound;
+
 	private String debugDirectory;
 	private boolean createDebugImages;
 
@@ -67,8 +69,6 @@ public final class Settings {
 			prop.load(fIn);
 
 			setDebugMode(getBooleanProperty("debug_mode", false));
-
-			setInstallDir(getProperty("install_dir", ""));
 
 			setWindowTitle(getProperty("window_title", "Kicker BallTracking"));
 
@@ -92,15 +92,18 @@ public final class Settings {
 			setMaxColorDistance(getIntProperty("max_color_distance", 40));
 			setRadiusSearchSmall(getIntProperty("radius_search_small", 25));
 
+			setTopBound(getIntProperty("top_bound", 106));
+			setRightBound(getIntProperty("right_bound", 560));
+			setBottomBound(getIntProperty("bottom_bound", 378));
+			setLeftBound(getIntProperty("left_bound", 88));
+
 			setDebugDirectory(getProperty("debug_dir", "E:" + File.separator + "Praktikum Master"));
 			setCreateDebugImages(getBooleanProperty("create_debug_images", false));
 
 			setAutoColor(getProperty("auto_color", "#FF0000"));
 			setManualColor(getProperty("manual_color", "#0000FF"));
 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
@@ -114,7 +117,7 @@ public final class Settings {
 	}
 
 	private String getProperty(String key, String defaultValue) {
-		String value = "";
+		String value;
 		try {
 			value = prop.getProperty(key);
 		} catch (Exception e) {
@@ -124,7 +127,7 @@ public final class Settings {
 	}
 
 	private int getIntProperty(String key, int defaultValue) {
-		int value = 0;
+		int value;
 		try {
 			value = Integer.parseInt(prop.getProperty(key));
 		} catch (Exception e) {
@@ -134,21 +137,13 @@ public final class Settings {
 	}
 
 	private boolean getBooleanProperty(String key, boolean defaultValue) {
-		boolean value = false;
+		boolean value;
 		try {
 			value = Boolean.parseBoolean(prop.getProperty(key));
 		} catch (Exception e) {
 			return defaultValue;
 		}
 		return value;
-	}
-
-	public String getInstallDir() {
-		return installDir;
-	}
-
-	private void setInstallDir(String installDir) {
-		this.installDir = installDir;
 	}
 
 	public String getWindowTitle() {
@@ -286,6 +281,38 @@ public final class Settings {
 
 	private void setRadiusSearchSmall(int radiusSearchSmall) {
 		this.radiusSearchSmall = radiusSearchSmall;
+	}
+
+	public int getTopBound() {
+		return topBound;
+	}
+
+	private void setTopBound(int topBound) {
+		this.topBound = topBound;
+	}
+
+	public int getRightBound() {
+		return rightBound;
+	}
+
+	private void setRightBound(int rightBound) {
+		this.rightBound = rightBound;
+	}
+
+	public int getBottomBound() {
+		return bottomBound;
+	}
+
+	private void setBottomBound(int bottomBound) {
+		this.bottomBound = bottomBound;
+	}
+
+	public int getLeftBound() {
+		return leftBound;
+	}
+
+	private void setLeftBound(int leftBound) {
+		this.leftBound = leftBound;
 	}
 
 	public String getDebugDirectory() {
