@@ -8,7 +8,7 @@ import de.kicker.tracking.model.xml.BallTrackingType;
 @BallTrackingType(value = "manual")
 public class ManualBallTracking extends AbstractBallTracking {
 
-	public ManualBallTracking() {
+	ManualBallTracking() {
 		super();
 	}
 
