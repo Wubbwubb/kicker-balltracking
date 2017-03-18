@@ -165,9 +165,9 @@ public class BallTrackingApplication extends Application {
 				.getTopBound());
 		filterShape = Shape.subtract(r1, r2);
 		Color filterColor = Color.BLACK;
-		filterColor = filterColor.deriveColor(0.0, 1.0, 1.0, 0.65);
+		filterColor = filterColor.deriveColor(0.0, 1.0, 1.0, 0.75);
 		filterShape.setFill(filterColor);
-		filterShape.setStroke(filterColor);
+		filterShape.setStroke(Color.AQUA);
 		filterShape.setStrokeWidth(1);
 		filterShape.setSmooth(true);
 
@@ -196,6 +196,9 @@ public class BallTrackingApplication extends Application {
 		btnColor.setDisable(true);
 		btnColor.setOnAction(event -> {
 			imgView.setCursor(Cursor.CROSSHAIR);
+			if (filterShape != null) {
+				filterShape.setCursor(Cursor.CROSSHAIR);
+			}
 			imgAnchor.setOnMouseClicked(event1 -> {
 
 				double initX = event1.getX();
@@ -224,6 +227,9 @@ public class BallTrackingApplication extends Application {
 				imgAnchor.setOnMouseClicked(null);
 
 				imgView.setCursor(Cursor.DEFAULT);
+				if (filterShape != null) {
+					filterShape.setCursor(Cursor.DEFAULT);
+				}
 
 			});
 		});
@@ -369,7 +375,7 @@ public class BallTrackingApplication extends Application {
 
 		primaryStage.setWidth(settings.getImageWidth() + 350);
 		primaryStage.setHeight(settings.getImageHeight() + 152);
-		primaryStage.setTitle(settings.getWindowTitle());
+		primaryStage.setTitle("Kicker-Balltracking");
 
 		try {
 			Image image = new Image(getClass().getClassLoader().getResourceAsStream(settings.getWindowicon()));
@@ -402,7 +408,7 @@ public class BallTrackingApplication extends Application {
 				chooser.setInitialDirectory(preDir);
 			}
 
-			chooser.setTitle(settings.getFileChooserTitle());
+			chooser.setTitle("Choose Image");
 			ExtensionFilter filter = new ExtensionFilter("image", "*.png", "*.jpg");
 			chooser.getExtensionFilters().add(filter);
 			File selectedFile = chooser.showOpenDialog(primaryStage);
@@ -440,7 +446,7 @@ public class BallTrackingApplication extends Application {
 				chooser.setInitialDirectory(preDir);
 			}
 
-			chooser.setTitle(settings.getDirChooserTitle());
+			chooser.setTitle("Choose Folder");
 			File selectedDir = chooser.showDialog(primaryStage);
 
 			if (selectedDir == null) {
@@ -497,6 +503,9 @@ public class BallTrackingApplication extends Application {
 				Position from = null;
 				for (TrackingImage image : images) {
 					Position to = image.getPosition();
+					if (Position.POSITION_NOT_FOUND.equals(to)) {
+						continue;
+					}
 					addMarker(image, settings.getAutoColor(), null);
 					if (from != null) {
 						addLine(from, to, Color.RED);
@@ -562,6 +571,9 @@ public class BallTrackingApplication extends Application {
 			if (currentIndex != trackingFactory.getInitialIndex()) {
 				removeManualCircle();
 				imgView.setCursor(Cursor.CROSSHAIR);
+				if (filterShape != null) {
+					filterShape.setCursor(Cursor.CROSSHAIR);
+				}
 				imgAnchor.setOnMouseClicked(event1 -> {
 
 					double initX = event1.getX();
@@ -569,7 +581,14 @@ public class BallTrackingApplication extends Application {
 
 					int posX = (int) (initX - imgView.getLayoutX());
 					int posY = (int) (initY - imgView.getLayoutY());
-					Position pos = new Position(posX, posY);
+
+					Position pos;
+					if (posX < settings.getLeftBound() || posX > settings.getRightBound() ||
+							posY < settings.getTopBound() || posY > settings.getBottomBound()) {
+						pos = Position.POSITION_NOT_FOUND;
+					} else {
+						pos = new Position(posX, posY);
+					}
 
 					int radius = trackingFactory.getBallShape().getRadius();
 
@@ -592,6 +611,9 @@ public class BallTrackingApplication extends Application {
 
 					imgAnchor.setOnMouseClicked(null);
 					imgView.setCursor(Cursor.DEFAULT);
+					if (filterShape != null) {
+						filterShape.setCursor(Cursor.DEFAULT);
+					}
 				});
 			}
 
@@ -614,6 +636,9 @@ public class BallTrackingApplication extends Application {
 			removeManualCircle();
 			setMarker(false);
 			imgView.setCursor(Cursor.DEFAULT);
+			if (filterShape != null) {
+				filterShape.setCursor(Cursor.DEFAULT);
+			}
 			imgAnchor.setOnMouseClicked(null);
 			logger.info("Initializing BallTracking finished");
 		});
@@ -622,6 +647,9 @@ public class BallTrackingApplication extends Application {
 		initializeTracking.setOnAction(event -> {
 			removeManualCircle();
 			imgView.setCursor(Cursor.CROSSHAIR);
+			if (filterShape != null) {
+				filterShape.setCursor(Cursor.CROSSHAIR);
+			}
 			imgAnchor.setOnMouseClicked(event12 -> {
 
 				double initX = event12.getX();
@@ -678,6 +706,9 @@ public class BallTrackingApplication extends Application {
 				imgAnchor.setOnMouseClicked(null);
 
 				imgView.setCursor(Cursor.DEFAULT);
+				if (filterShape != null) {
+					filterShape.setCursor(Cursor.DEFAULT);
+				}
 
 			});
 		});
@@ -808,6 +839,9 @@ public class BallTrackingApplication extends Application {
 	}
 
 	private void addLine(Position from, Position to, Color color) {
+		if (Position.POSITION_NOT_FOUND.equals(from) || Position.POSITION_NOT_FOUND.equals(to)) {
+			return;
+		}
 
 		Line line = new Line(from.getX() + imgView.getLayoutX(), from.getY() + imgView.getLayoutY(),
 				to.getX() + imgView.getLayoutX(), to.getY() + imgView.getLayoutY());

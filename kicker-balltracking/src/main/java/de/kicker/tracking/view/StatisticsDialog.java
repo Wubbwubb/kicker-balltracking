@@ -1,25 +1,38 @@
 package de.kicker.tracking.view;
 
+import de.kicker.tracking.model.Position;
+import de.kicker.tracking.model.TrackingImage;
+import de.kicker.tracking.model.balltracking.AbstractBallTracking;
 import de.kicker.tracking.model.balltracking.IAutomaticBallTracking;
 import de.kicker.tracking.model.balltracking.ManualBallTracking;
 import de.kicker.tracking.model.balltracking.TrackingFactory;
 import de.kicker.tracking.model.settings.Settings;
 import de.kicker.tracking.util.FXUtil;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.apache.log4j.Logger;
 
+import java.text.DecimalFormat;
+import java.util.Collection;
+import java.util.Objects;
+
 class StatisticsDialog extends Stage {
 
 	private static final Logger logger = Logger.getLogger(StatisticsDialog.class);
 	private final static Settings settings = Settings.getInstance();
+
+	private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
 
 	StatisticsDialog(TrackingFactory trackingFactory, int maxIndex) {
 		super(StageStyle.DECORATED);
@@ -61,10 +74,10 @@ class StatisticsDialog extends Stage {
 //            }
 //        });
 
-		VBox root = FXUtil.getVBox(-1, -1, 20);
-		root.setMinWidth(500);
+		VBox root = FXUtil.getVBox(-1, -1, 0);
+		root.setMinWidth(600);
 		root.setMinHeight(600);
-		root.setPadding(new Insets(20));
+		root.setPadding(new Insets(0));
 
 		setScene(new Scene(root));
 
@@ -84,12 +97,84 @@ class StatisticsDialog extends Stage {
 			return;
 		}
 
+		HBox absoluteContainer = FXUtil.getHBox(-1, -1, 0);
+		absoluteContainer.setMinHeight(200);
+		absoluteContainer.setPadding(new Insets(0));
+		root.getChildren().add(absoluteContainer);
+
+		VBox absoluteAutoContainer = FXUtil.getVBox(-1, -1, 0);
+		absoluteAutoContainer.setMinWidth(300);
+		absoluteAutoContainer.setPadding(new Insets(0));
+		absoluteContainer.getChildren().add(absoluteAutoContainer);
+
+		VBox absoluteManualContainer = FXUtil.getVBox(-1, -1, 0);
+		absoluteManualContainer.setMinWidth(300);
+		absoluteManualContainer.setPadding(new Insets(0));
+		absoluteContainer.getChildren().add(absoluteManualContainer);
+
+		HBox tmpHBox = FXUtil.getHBox(-1, -1, 5);
+		tmpHBox.setPadding(new Insets(15));
+		tmpHBox.setAlignment(Pos.CENTER);
+		tmpHBox.getChildren().add(new Label("Auto Tracking"));
+		absoluteAutoContainer.getChildren().add(tmpHBox);
+
+		VBox tmpVBox = FXUtil.getVBox(-1, -1, 0);
+		tmpVBox.setPadding(new Insets(0));
+		absoluteAutoContainer.getChildren().add(tmpVBox);
+
+		addAbsoluteStats(tmpVBox, (AbstractBallTracking) automaticBallTracking, trackingFactory.getInitialIndex(), maxIndex);
+
+		tmpHBox = FXUtil.getHBox(-1, -1, 5);
+		tmpHBox.setPadding(new Insets(15));
+		tmpHBox.setAlignment(Pos.CENTER);
+		tmpHBox.getChildren().add(new Label("Manual Tracking"));
+		absoluteManualContainer.getChildren().add(tmpHBox);
+
+		tmpVBox = FXUtil.getVBox(-1, -1, 0);
+		tmpVBox.setPadding(new Insets(0));
+		absoluteManualContainer.getChildren().add(tmpVBox);
+
+		addAbsoluteStats(tmpVBox, manualBallTracking, trackingFactory.getInitialIndex(), maxIndex);
+
+		tmpVBox = FXUtil.getVBox(-1, -1, 0);
+		tmpVBox.setMinHeight(400);
+		tmpVBox.setPadding(new Insets(0));
+		root.getChildren().add(tmpVBox);
+
+		tmpHBox = FXUtil.getHBox(-1, -1, 5);
+		tmpHBox.setPadding(new Insets(15));
+		tmpHBox.setAlignment(Pos.CENTER);
+		tmpHBox.getChildren().add(new Label("Compare"));
+		tmpVBox.getChildren().add(tmpHBox);
+
 		logger.debug("hier kommt die Statistik");
+	}
 
-		int initialIndex = trackingFactory.getInitialIndex();
+	private void addAbsoluteStats(VBox container, AbstractBallTracking bt, int initialIndex, int maxIndex) {
+		GridPane grid = new GridPane();
+		grid.setHgap(15);
+		grid.setVgap(8);
+		grid.setAlignment(Pos.CENTER);
+		ColumnConstraints cc = new ColumnConstraints();
+		cc.setHalignment(HPos.RIGHT);
+		grid.getColumnConstraints().add(cc);
+		cc = new ColumnConstraints();
+		cc.setHalignment(HPos.LEFT);
+		grid.getColumnConstraints().add(cc);
+		container.getChildren().add(grid);
 
-		Label lbl = new Label("Automatic Tracking");
-		TextField txt = new TextField("");
+		int noOfImages = maxIndex + 1;
+		Collection<TrackingImage> allTrackedImages = bt.getAllTrackedImages();
+		long posNotFound = allTrackedImages.stream().filter(i -> Objects.equals(i.getPosition(), Position.POSITION_NOT_FOUND))
+				.count();
+
+		grid.add(new Label("tracked images:"), 0, 0);
+		grid.add(new Label(String.valueOf(allTrackedImages.size()) + " of " + noOfImages + " (" +
+				FORMAT.format((allTrackedImages.size() / (double) noOfImages) * 100) + "%)"), 1, 0);
+
+		grid.add(new Label("position not found:"), 0, 1);
+		grid.add(new Label(String.valueOf(posNotFound) + " (" + FORMAT.format((posNotFound / (double) allTrackedImages.size()) *
+				100) + "%)"), 1, 1);
 	}
 
 }

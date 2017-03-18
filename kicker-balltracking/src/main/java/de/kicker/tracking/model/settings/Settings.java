@@ -2,8 +2,6 @@ package de.kicker.tracking.model.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -19,7 +17,6 @@ public final class Settings {
 	private boolean debugMode;
 
 	// ##### window settings #####
-	private String windowTitle;
 	private static final String windowIcon = "images/icon.png";
 
 	// ##### image settings #####
@@ -27,9 +24,6 @@ public final class Settings {
 	private static final String imagePlaceholder = "images/img_placeholder.png";
 	private int imageWidth;
 	private int imageHeight;
-
-	private String dirChooserTitle;
-	private String fileChooserTitle;
 
 	private int ballRadius;
 
@@ -70,15 +64,10 @@ public final class Settings {
 
 			setDebugMode(getBooleanProperty("debug_mode", false));
 
-			setWindowTitle(getProperty("window_title", "Kicker BallTracking"));
-
 			setImageDir(getProperty("image_dir",
 					"E:" + File.separator + "Praktikum Master" + File.separator + "Bilder_orange"));
 			setImageWidth(getIntProperty("image_width", 640));
 			setImageHeight(getIntProperty("image_height", 480));
-
-			setDirChooserTitle(getProperty("folderchooser_title", "Choose Folder"));
-			setFileChooserTitle(getProperty("filechooser_title", "Choose Image"));
 
 			setBallRadius(getIntProperty("ball_radius", 6));
 
@@ -146,14 +135,6 @@ public final class Settings {
 		return value;
 	}
 
-	public String getWindowTitle() {
-		return windowTitle;
-	}
-
-	private void setWindowTitle(String windowTitle) {
-		this.windowTitle = windowTitle;
-	}
-
 	public String getWindowicon() {
 		return windowIcon;
 	}
@@ -169,22 +150,6 @@ public final class Settings {
 
 	public String getImagePlaceholder() {
 		return imagePlaceholder;
-	}
-
-	public String getDirChooserTitle() {
-		return dirChooserTitle;
-	}
-
-	private void setDirChooserTitle(String chooserTitle) {
-		this.dirChooserTitle = chooserTitle;
-	}
-
-	public String getFileChooserTitle() {
-		return fileChooserTitle;
-	}
-
-	private void setFileChooserTitle(String fileChooserTitle) {
-		this.fileChooserTitle = fileChooserTitle;
 	}
 
 	public int getImageWidth() {

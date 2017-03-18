@@ -78,7 +78,6 @@ public class TrackingFactory {
 	}
 
 	/**
-	 * 
 	 * @param index
 	 * @param file
 	 * @param position
@@ -94,6 +93,10 @@ public class TrackingFactory {
 		if (getBallShape() != null) {
 			if (index == getCurrentIndex() + 1) {
 				autoBallTracking.trackFile(index, file, getBallShape());
+//				TrackingImage img = manualBallTracking.getTrackingImage(currentIndex);
+//				if (img == null || img.getPosition() == null) {
+//					trackManual(index, file, Position.POSITION_NOT_FOUND);
+//				}
 				setCurrentIndex(index);
 			} else {
 				logger.error("current index is " + currentIndex + ". you have to track " + (currentIndex + 1)
@@ -117,8 +120,7 @@ public class TrackingFactory {
 	}
 
 	public static TrackingFactory importFromXML(File file, Class<? extends IAutomaticBallTracking> automaticClass) {
-		TrackingFactory factory = XMLLayer.readBallTracking(file, automaticClass);
-		return factory;
+		return XMLLayer.readBallTracking(file, automaticClass);
 	}
 
 }

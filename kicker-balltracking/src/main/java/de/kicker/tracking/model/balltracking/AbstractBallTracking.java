@@ -12,13 +12,13 @@ import de.kicker.tracking.model.TrackingImage;
 
 public abstract class AbstractBallTracking implements IBallTracking {
 
-	protected Map<Integer, TrackingImage> trackedImages;
+	private Map<Integer, TrackingImage> trackedImages;
 
-	protected AbstractBallTracking() {
-		this(new HashMap<Integer, TrackingImage>());
+	AbstractBallTracking() {
+		this(new HashMap<>());
 	}
 
-	protected AbstractBallTracking(Map<Integer, TrackingImage> trackedImages) {
+	AbstractBallTracking(Map<Integer, TrackingImage> trackedImages) {
 		setTrackedImages(trackedImages);
 	}
 
