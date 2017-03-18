@@ -196,7 +196,8 @@ class StatisticsDialog extends Stage {
 		grid.add(new Label(String.valueOf(totalCompare)), 1, 0);
 
 		grid.add(new Label("#same position:"), 0, 1);
-		grid.add(new Label(String.valueOf(noOfEquals)), 1, 1);
+		grid.add(new Label(String.valueOf(noOfEquals) + " (" +
+				FORMAT.format((noOfEquals / (double) totalCompare) * 100) + "%)"), 1, 1);
 
 		grid.add(new Label("#false positives:"), 0, 2);
 		grid.add(new Label(String.valueOf(falsePositives) + " (" +
