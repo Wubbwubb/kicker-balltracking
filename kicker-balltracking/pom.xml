@@ -105,6 +105,25 @@
 							</resources>
 						</configuration>
 					</execution>
+					<execution>
+						<id>copy-resources-3</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.release.dir}/doku</outputDirectory>
+							<resources>
+								<resource>
+									<directory>doku</directory>
+									<includes>
+										<include>**/*.pdf</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 

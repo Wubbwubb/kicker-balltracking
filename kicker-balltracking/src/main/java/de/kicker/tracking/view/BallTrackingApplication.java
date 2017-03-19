@@ -14,12 +14,19 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -27,8 +34,10 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 import org.opencv.core.Core;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class BallTrackingApplication extends Application {
 
@@ -395,6 +404,7 @@ public class BallTrackingApplication extends Application {
 		Menu menuFile = new Menu("File");
 		Menu menuEdit = new Menu("Edit");
 		Menu menuTrack = new Menu("Track");
+		Menu menuHelp = new Menu("Help");
 
 		MenuItem chooseFile = new MenuItem("Open Image");
 		chooseFile.setOnAction(event -> {
@@ -770,7 +780,23 @@ public class BallTrackingApplication extends Application {
 		menuTrack.getItems().addAll(initializeTracking, fixBallShape, new SeparatorMenuItem(), trackManual,
 				new SeparatorMenuItem(), trackNext, trackAll);
 
-		menuBar.getMenus().addAll(menuFile, menuEdit, menuTrack);
+		MenuItem helpItem = new MenuItem("Open doku");
+		helpItem.setOnAction(event -> {
+			File f = new File(settings.getDokuFile());
+			if (f.exists()) {
+				try {
+					Desktop.getDesktop().open(f);
+				} catch (IOException e) {
+					logger.error("could not open file '" + f.getAbsolutePath() + "'", e);
+				}
+			} else {
+				logger.error("the given file '" + f.getAbsolutePath() + "' doesn't exist!");
+			}
+		});
+
+		menuHelp.getItems().add(helpItem);
+
+		menuBar.getMenus().addAll(menuFile, menuEdit, menuTrack, menuHelp);
 
 		return menuBar;
 	}

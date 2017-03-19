@@ -45,6 +45,8 @@ public final class Settings {
 	private int bottomBound;
 	private int leftBound;
 
+	private String dokuFile;
+
 	private String debugDirectory;
 	private boolean createDebugImages;
 
@@ -85,6 +87,8 @@ public final class Settings {
 			setRightBound(getIntProperty("right_bound", 560));
 			setBottomBound(getIntProperty("bottom_bound", 378));
 			setLeftBound(getIntProperty("left_bound", 88));
+
+			setDokuFile(getProperty("doku_file", "doku/Masterpraktikum Kicker-Balltracking.pdf"));
 
 			setDebugDirectory(getProperty("debug_dir", "E:" + File.separator + "Praktikum Master"));
 			setCreateDebugImages(getBooleanProperty("create_debug_images", false));
@@ -286,6 +290,14 @@ public final class Settings {
 
 	private void setDebugDirectory(String debugDirectory) {
 		this.debugDirectory = debugDirectory;
+	}
+
+	public String getDokuFile() {
+		return dokuFile;
+	}
+
+	private void setDokuFile(String dokuFile) {
+		this.dokuFile = dokuFile;
 	}
 
 	public boolean createDebugImages() {
