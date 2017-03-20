@@ -30,18 +30,42 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 	public AutomaticBallTracking() {
 		super();
-		this.xMin = Math.max(0, settings.getLeftBound());
-		this.xMax = Math.max(0, settings.getRightBound());
-		this.yMin = Math.max(0, settings.getTopBound());
-		this.yMax = Math.max(0, settings.getBottomBound());
+		this.xMin = settings.getLeftBound();
+		if (this.xMin < 0) {
+			this.xMin = 0;
+		}
+		this.xMax = settings.getRightBound();
+		if (this.xMax < 0) {
+			this.xMax = settings.getImageWidth();
+		}
+		this.yMin = settings.getTopBound();
+		if (this.yMin < 0) {
+			this.yMin = 0;
+		}
+		this.yMax = settings.getBottomBound();
+		if (this.yMax < 0) {
+			this.yMax = settings.getImageHeight();
+		}
 	}
 
 	public AutomaticBallTracking(Map<Integer, TrackingImage> trackedImages) {
 		super(trackedImages);
-		this.xMin = Math.max(0, settings.getLeftBound());
-		this.xMax = Math.max(0, settings.getRightBound());
-		this.yMin = Math.max(0, settings.getTopBound());
-		this.yMax = Math.max(0, settings.getBottomBound());
+		this.xMin = settings.getLeftBound();
+		if (this.xMin < 0) {
+			this.xMin = 0;
+		}
+		this.xMax = settings.getRightBound();
+		if (this.xMax < 0) {
+			this.xMax = settings.getImageWidth();
+		}
+		this.yMin = settings.getTopBound();
+		if (this.yMin < 0) {
+			this.yMin = 0;
+		}
+		this.yMax = settings.getBottomBound();
+		if (this.yMax < 0) {
+			this.yMax = settings.getImageHeight();
+		}
 	}
 
 	@Override
@@ -53,8 +77,8 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 	private Position calculatePosition(int index, File file, BallShape ballShape) {
 		Random r = new Random();
-		int x = r.nextInt(xMax - xMin) + xMin;
-		int y = r.nextInt(yMax - yMin) + yMin;
+		int x = r.nextInt(this.xMax - this.xMin) + this.xMin;
+		int y = r.nextInt(this.yMax - this.yMin) + this.yMin;
 		Position position = new Position(x, y);
 
 		try {
@@ -66,7 +90,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 			BufferedImage actImage = AWTUtil.getImageFromFile(file);
 
 			BufferedImage binaryImage = AWTUtil.getBinaryImage(actImage, ballShape.getAWTColor(), settings.getMaxColorDistance()
-					, xMin, yMin, xMax, yMax);
+					, this.xMin, this.yMin, this.xMax, this.yMax);
 
 			if (settings.createDebugImages()) {
 
@@ -141,15 +165,15 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 	private Position resetPrePosition(boolean[][] negImage, Position prePosition) {
 
-		int initialX = prePosition.isNotFound() ? xMax - xMin : prePosition.getX();
-		int initialY = prePosition.isNotFound() ? yMax - yMin : prePosition.getY();
+		int initialX = prePosition.isNotFound() ? this.xMax - this.xMin : prePosition.getX();
+		int initialY = prePosition.isNotFound() ? this.yMax - this.yMin : prePosition.getY();
 
 		int k = 1;
 		while (true) {
-			int startX = Math.max(-k, xMin - initialX);
-			int startY = Math.max(-k, yMin - initialY);
-			int maxX = Math.min(k, xMax - initialX);
-			int maxY = Math.min(k, yMax - initialY);
+			int startX = Math.max(-k, this.xMin - initialX);
+			int startY = Math.max(-k, this.yMin - initialY);
+			int maxX = Math.min(k, this.xMax - initialX);
+			int maxY = Math.min(k, this.yMax - initialY);
 			for (int x = startX; x <= maxX; x++) {
 				for (int y = startY; y <= maxY; y++) {
 					if (Math.abs(x) != k && Math.abs(y) != k) {
@@ -167,7 +191,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 					}
 				}
 			}
-			if (startX == xMin - initialX && maxX == xMax - initialX && startY == yMin - initialY && maxY == yMax - initialY) {
+			if (startX == this.xMin - initialX && maxX == this.xMax - initialX && startY == this.yMin - initialY && maxY == this.yMax - initialY) {
 				break;
 			}
 			k++;
@@ -181,8 +205,8 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 		int initialX = prePosition.getX();
 		int initialY = prePosition.getY();
 
-		for (int x = Math.max(-1, xMin - initialX); x <= Math.min(1, xMax - initialX); x++) {
-			for (int y = Math.max(-1, yMin - initialY); y <= Math.min(1, yMax - initialY); y++) {
+		for (int x = Math.max(-1, this.xMin - initialX); x <= Math.min(1, this.xMax - initialX); x++) {
+			for (int y = Math.max(-1, this.yMin - initialY); y <= Math.min(1, this.yMax - initialY); y++) {
 				if (Math.abs(x) != 1 && Math.abs(y) != 1) {
 					y = 0;
 					continue;
@@ -205,10 +229,10 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 		int k = 1;
 		while (k <= settings.getRadiusSearchSmall()) {
-			int maxX = Math.min(k, xMax - initialX);
-			int maxY = Math.min(k, yMax - initialY);
-			for (int x = Math.max(-k, xMin - initialX); x <= maxX; x++) {
-				for (int y = Math.max(-k, yMin - initialY); y <= maxY; y++) {
+			int maxX = Math.min(k, this.xMax - initialX);
+			int maxY = Math.min(k, this.yMax - initialY);
+			for (int x = Math.max(-k, this.xMin - initialX); x <= maxX; x++) {
+				for (int y = Math.max(-k, this.yMin - initialY); y <= maxY; y++) {
 					if (Math.abs(x) != k && Math.abs(y) != k) {
 						if (y != maxY) {
 							y = maxY - 1;
@@ -235,19 +259,19 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 		int initialX = prePosition.getX();
 		int initialY = prePosition.getY();
 
-		int xMin = initialX;
-		int xMax = initialX;
-		int yMin = initialY;
-		int yMax = initialY;
+		int tmpXMin = initialX;
+		int tmpXMax = initialX;
+		int tmpYMin = initialY;
+		int tmpYMax = initialY;
 
 		boolean update = true;
 		int k = 1;
 		while (update) {
 			update = false;
-			int startX = Math.max(-k, xMin - initialX);
-			int startY = Math.max(-k, yMin - initialY);
-			int maxX = Math.min(k, xMax - initialX);
-			int maxY = Math.min(k, yMax - initialY);
+			int startX = Math.max(-k, this.xMin - initialX);
+			int startY = Math.max(-k, this.yMin - initialY);
+			int maxX = Math.min(k, this.xMax - initialX);
+			int maxY = Math.min(k, this.yMax - initialY);
 			for (int x = startX; x <= maxX; x++) {
 				for (int y = startY; y <= maxY; y++) {
 					if (Math.abs(x) != k && Math.abs(y) != k) {
@@ -259,20 +283,20 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 					Position p = new Position(initialX + x, initialY + y);
 					if (negImage[p.getX()][p.getY()]) {
-						if (xMin > p.getX()) {
-							xMin = p.getX();
+						if (tmpXMin > p.getX()) {
+							tmpXMin = p.getX();
 							update = true;
 						}
-						if (yMin > p.getY()) {
-							yMin = p.getY();
+						if (tmpYMin > p.getY()) {
+							tmpYMin = p.getY();
 							update = true;
 						}
-						if (xMax < p.getX()) {
-							xMax = p.getX();
+						if (tmpXMax < p.getX()) {
+							tmpXMax = p.getX();
 							update = true;
 						}
-						if (yMax < p.getY()) {
-							yMax = p.getY();
+						if (tmpYMax < p.getY()) {
+							tmpYMax = p.getY();
 							update = true;
 						}
 					}
@@ -281,6 +305,6 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 			k++;
 		}
 
-		return new Position((xMax + xMin) / 2, (yMax + yMin) / 2);
+		return new Position((tmpXMax + tmpXMin) / 2, (tmpYMax + tmpYMin) / 2);
 	}
 }
