@@ -167,18 +167,22 @@ public class BallTrackingApplication extends Application {
 		imgView.setLayoutX(10);
 		imgView.setLayoutY(10);
 
-		Rectangle r1 = new Rectangle(imgView.getLayoutX(), imgView.getLayoutY(), settings.getImageWidth(), settings
-				.getImageHeight());
-		Rectangle r2 = new Rectangle(settings.getLeftBound() + imgView.getLayoutX(), settings.getTopBound() + imgView
-				.getLayoutY(), settings.getRightBound() - settings.getLeftBound(), settings.getBottomBound() - settings
-				.getTopBound());
-		filterShape = Shape.subtract(r1, r2);
-		Color filterColor = Color.BLACK;
-		filterColor = filterColor.deriveColor(0.0, 1.0, 1.0, 0.75);
-		filterShape.setFill(filterColor);
-		filterShape.setStroke(Color.AQUA);
-		filterShape.setStrokeWidth(1);
-		filterShape.setSmooth(true);
+		if (settings.getTopBound() >= 0 && settings.getRightBound() >= 0 && settings.getBottomBound() >= 0 && settings.getLeftBound() >= 0) {
+			Rectangle r1 = new Rectangle(imgView.getLayoutX(), imgView.getLayoutY(), settings.getImageWidth(), settings
+					.getImageHeight());
+			Rectangle r2 = new Rectangle(settings.getLeftBound() + imgView.getLayoutX(), settings.getTopBound() + imgView
+					.getLayoutY(), settings.getRightBound() - settings.getLeftBound(), settings.getBottomBound() - settings
+					.getTopBound());
+			filterShape = Shape.subtract(r1, r2);
+			Color filterColor = Color.BLACK;
+			filterColor = filterColor.deriveColor(0.0, 1.0, 1.0, 0.75);
+			filterShape.setFill(filterColor);
+			filterShape.setStroke(Color.AQUA);
+			filterShape.setStrokeWidth(1);
+			filterShape.setSmooth(true);
+		} else {
+			filterShape = null;
+		}
 
 		String dir = settings.getImageDir();
 		if ("".equals(dir.trim())) {
@@ -379,6 +383,10 @@ public class BallTrackingApplication extends Application {
 
 		scene.getAccelerators().put(settings.getKeyCombinationBtnPrev(), () -> btnPrev.fire());
 		scene.getAccelerators().put(settings.getKeyCombinationBtnNext(), () -> btnNext.fire());
+		scene.getAccelerators().put(settings.getKeyCombinationBtnPositionTop(), () -> btnPositionTop.fire());
+		scene.getAccelerators().put(settings.getKeyCombinationBtnPositionRight(), () -> btnPositionRight.fire());
+		scene.getAccelerators().put(settings.getKeyCombinationBtnPositionBottom(), () -> btnPositionBottom.fire());
+		scene.getAccelerators().put(settings.getKeyCombinationBtnPositionLeft(), () -> btnPositionLeft.fire());
 
 		primaryStage.setScene(scene);
 
@@ -907,7 +915,7 @@ public class BallTrackingApplication extends Application {
 
 	private void refreshDirectory() {
 
-		FileInputStream fIn = null;
+		InputStream fIn = null;
 
 		try {
 

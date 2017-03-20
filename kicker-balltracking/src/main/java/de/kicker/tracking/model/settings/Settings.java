@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.paint.Color;
 
@@ -35,6 +37,10 @@ public final class Settings {
 	private KeyCombination keyCombinationTrackNext;
 	private KeyCombination keyCombinationTrackAll;
 	private KeyCombination keyCombinationTrackManual;
+	private KeyCombination keyCombinationBtnPositionTop;
+	private KeyCombination keyCombinationBtnPositionRight;
+	private KeyCombination keyCombinationBtnPositionBottom;
+	private KeyCombination keyCombinationBtnPositionLeft;
 
 	private int searchFailThreshold;
 	private int maxColorDistance;
@@ -78,15 +84,19 @@ public final class Settings {
 			setKeyCombinationTrackNext(KeyCombination.keyCombination("F6"));
 			setKeyCombinationTrackAll(KeyCombination.keyCombination("F8"));
 			setKeyCombinationTrackManual(KeyCombination.keyCombination("F5"));
+			setKeyCombinationBtnPositionTop(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN));
+			setKeyCombinationBtnPositionRight(new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.CONTROL_DOWN));
+			setKeyCombinationBtnPositionBottom(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.CONTROL_DOWN));
+			setKeyCombinationBtnPositionLeft(new KeyCodeCombination(KeyCode.LEFT, KeyCombination.CONTROL_DOWN));
 
 			setSearchFailThreshold(getIntProperty("search_fail_threshold", 5));
 			setMaxColorDistance(getIntProperty("max_color_distance", 40));
 			setRadiusSearchSmall(getIntProperty("radius_search_small", 25));
 
-			setTopBound(getIntProperty("top_bound", 106));
-			setRightBound(getIntProperty("right_bound", 560));
-			setBottomBound(getIntProperty("bottom_bound", 378));
-			setLeftBound(getIntProperty("left_bound", 88));
+			setTopBound(getIntProperty("top_bound", -1));
+			setRightBound(getIntProperty("right_bound", -1));
+			setBottomBound(getIntProperty("bottom_bound", -1));
+			setLeftBound(getIntProperty("left_bound", -1));
 
 			setDokuFile(getProperty("doku_file", "doku/Masterpraktikum Kicker-Balltracking.pdf"));
 
@@ -218,6 +228,38 @@ public final class Settings {
 
 	private void setKeyCombinationTrackManual(KeyCombination keyCombinationTrackManual) {
 		this.keyCombinationTrackManual = keyCombinationTrackManual;
+	}
+
+	public KeyCombination getKeyCombinationBtnPositionTop() {
+		return keyCombinationBtnPositionTop;
+	}
+
+	private void setKeyCombinationBtnPositionTop(KeyCombination keyCombinationBtnPositionTop) {
+		this.keyCombinationBtnPositionTop = keyCombinationBtnPositionTop;
+	}
+
+	public KeyCombination getKeyCombinationBtnPositionRight() {
+		return keyCombinationBtnPositionRight;
+	}
+
+	private void setKeyCombinationBtnPositionRight(KeyCombination keyCombinationBtnPositionRight) {
+		this.keyCombinationBtnPositionRight = keyCombinationBtnPositionRight;
+	}
+
+	public KeyCombination getKeyCombinationBtnPositionBottom() {
+		return keyCombinationBtnPositionBottom;
+	}
+
+	private void setKeyCombinationBtnPositionBottom(KeyCombination keyCombinationBtnPositionBottom) {
+		this.keyCombinationBtnPositionBottom = keyCombinationBtnPositionBottom;
+	}
+
+	public KeyCombination getKeyCombinationBtnPositionLeft() {
+		return keyCombinationBtnPositionLeft;
+	}
+
+	private void setKeyCombinationBtnPositionLeft(KeyCombination keyCombinationBtnPositionLeft) {
+		this.keyCombinationBtnPositionLeft = keyCombinationBtnPositionLeft;
 	}
 
 	public boolean isDebugMode() {

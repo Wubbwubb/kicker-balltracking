@@ -18,255 +18,269 @@ import de.kicker.tracking.util.AWTUtil;
 @BallTrackingType(value = "auto")
 public class AutomaticBallTracking extends AbstractBallTracking implements IAutomaticBallTracking {
 
-    private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
-    private static final Settings settings = Settings.getInstance();
+	private static final Logger logger = Logger.getLogger(AutomaticBallTracking.class);
+	private static final Settings settings = Settings.getInstance();
 
-    private int searchFails = 0;
+	private int searchFails = 0;
 
-    public AutomaticBallTracking() {
-        super();
-    }
+	private int xMin;
+	private int xMax;
+	private int yMin;
+	private int yMax;
 
-    public AutomaticBallTracking(Map<Integer, TrackingImage> trackedImages) {
-        super(trackedImages);
-    }
+	public AutomaticBallTracking() {
+		super();
+		this.xMin = Math.max(0, settings.getLeftBound());
+		this.xMax = Math.max(0, settings.getRightBound());
+		this.yMin = Math.max(0, settings.getTopBound());
+		this.yMax = Math.max(0, settings.getBottomBound());
+	}
 
-    @Override
-    public void trackFile(int index, File file, BallShape ballShape) {
-        Position position = calculatePosition(index, file, ballShape);
-        logger.debug("calculated position: " + position.toString());
-        assignBallToFile(index, file, position);
-    }
+	public AutomaticBallTracking(Map<Integer, TrackingImage> trackedImages) {
+		super(trackedImages);
+		this.xMin = Math.max(0, settings.getLeftBound());
+		this.xMax = Math.max(0, settings.getRightBound());
+		this.yMin = Math.max(0, settings.getTopBound());
+		this.yMax = Math.max(0, settings.getBottomBound());
+	}
 
-    private Position calculatePosition(int index, File file, BallShape ballShape) {
-        Random r = new Random();
-        int x = r.nextInt(settings.getRightBound() - settings.getLeftBound()) + settings.getLeftBound();
-        int y = r.nextInt(settings.getBottomBound() - settings.getTopBound()) + settings.getTopBound();
-        Position position = new Position(x, y);
+	@Override
+	public void trackFile(int index, File file, BallShape ballShape) {
+		Position position = calculatePosition(index, file, ballShape);
+		logger.debug("calculated position: " + position.toString());
+		assignBallToFile(index, file, position);
+	}
 
-        try {
+	private Position calculatePosition(int index, File file, BallShape ballShape) {
+		Random r = new Random();
+		int x = r.nextInt(xMax - xMin) + xMin;
+		int y = r.nextInt(yMax - yMin) + yMin;
+		Position position = new Position(x, y);
 
-            TrackingImage preTrackingImage = getTrackingImage(index - 1);
-            Position prePosition = getValidePrePosition(index);
+		try {
 
-            BufferedImage preImage = AWTUtil.getImageFromFile(preTrackingImage.getFile());
-            BufferedImage actImage = AWTUtil.getImageFromFile(file);
+			TrackingImage preTrackingImage = getTrackingImage(index - 1);
+			Position prePosition = getValidePrePosition(index);
 
-            BufferedImage binaryImage = AWTUtil.getBinaryImage(actImage, ballShape.getAWTColor(), settings.getMaxColorDistance(), settings.getLeftBound(), settings.getTopBound(), settings.getRightBound(), settings.getBottomBound());
+			BufferedImage preImage = AWTUtil.getImageFromFile(preTrackingImage.getFile());
+			BufferedImage actImage = AWTUtil.getImageFromFile(file);
 
-            if (settings.createDebugImages()) {
+			BufferedImage binaryImage = AWTUtil.getBinaryImage(actImage, ballShape.getAWTColor(), settings.getMaxColorDistance()
+					, xMin, yMin, xMax, yMax);
 
-                BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage, actImage);
-                AWTUtil.writeImageToFile(diffImage, AWTUtil.getOutputFile(index, "diff"));
+			if (settings.createDebugImages()) {
 
-                AWTUtil.writeImageToFile(binaryImage, AWTUtil.getOutputFile(index, "negative"));
+				BufferedImage diffImage = AWTUtil.getDifferenceImage(preImage, actImage);
+				AWTUtil.writeImageToFile(diffImage, AWTUtil.getOutputFile(index, "diff"));
 
-                BufferedImage diff1 = AWTUtil.getDifferenceImage(preImage, ballShape.getAWTColor());
-                BufferedImage diff2 = AWTUtil.getDifferenceImage(actImage, ballShape.getAWTColor());
+				AWTUtil.writeImageToFile(binaryImage, AWTUtil.getOutputFile(index, "negative"));
 
-                BufferedImage diffDiff = AWTUtil.getDifferenceImage(diff1, diff2);
-                AWTUtil.writeImageToFile(diffDiff, AWTUtil.getOutputFile(index, "diffDiff"));
-            }
+				BufferedImage diff1 = AWTUtil.getDifferenceImage(preImage, ballShape.getAWTColor());
+				BufferedImage diff2 = AWTUtil.getDifferenceImage(actImage, ballShape.getAWTColor());
 
-            boolean[][] bools = AWTUtil.getWhiteBooleans(binaryImage);
+				BufferedImage diffDiff = AWTUtil.getDifferenceImage(diff1, diff2);
+				AWTUtil.writeImageToFile(diffDiff, AWTUtil.getOutputFile(index, "diffDiff"));
+			}
 
-            if (searchFails >= settings.getSearchFailThreshold() || prePosition.isNotFound()) {
-                logger.debug("reset prePosition");
-                prePosition = resetPrePosition(bools, prePosition);
-                if (prePosition.isNotFound()) {
-                    logger.debug("reset failed!");
-                    searchFails++;
-                    logger.debug("fail " + searchFails);
-                    return Position.POSITION_NOT_FOUND;
-                }
-            }
+			boolean[][] bools = AWTUtil.getWhiteBooleans(binaryImage);
 
-            if (Color.WHITE.equals(AWTUtil.getColor(binaryImage, prePosition))) {
+			if (searchFails >= settings.getSearchFailThreshold() || prePosition.isNotFound()) {
+				logger.debug("reset prePosition");
+				prePosition = resetPrePosition(bools, prePosition);
+				if (prePosition.isNotFound()) {
+					logger.debug("reset failed!");
+					searchFails++;
+					logger.debug("fail " + searchFails);
+					return Position.POSITION_NOT_FOUND;
+				}
+			}
 
-                logger.debug("detect position around prePosition");
-                searchFails = 0;
-                return getPositionAroundPrePosition(bools, prePosition);
+			if (Color.WHITE.equals(AWTUtil.getColor(binaryImage, prePosition))) {
 
-            } else {
+				logger.debug("detect position around prePosition");
+				searchFails = 0;
+				return getPositionAroundPrePosition(bools, prePosition);
 
-                logger.debug("prePosition is not marked");
-                Position nextBallPosition = findNextBallPosition(bools, prePosition);
-                if (!nextBallPosition.isNotFound()) {
-                    logger.debug("next position: " + nextBallPosition.toString());
-                    searchFails = 0;
-                    return getPositionAroundPrePosition(bools, nextBallPosition);
-                }
+			} else {
 
-            }
+				logger.debug("prePosition is not marked");
+				Position nextBallPosition = findNextBallPosition(bools, prePosition);
+				if (!nextBallPosition.isNotFound()) {
+					logger.debug("next position: " + nextBallPosition.toString());
+					searchFails = 0;
+					return getPositionAroundPrePosition(bools, nextBallPosition);
+				}
 
-            searchFails++;
-            logger.debug("fail " + searchFails);
-            return Position.POSITION_NOT_FOUND;
+			}
 
-        } catch (Exception e) {
-            logger.error("error in calculatePosition at index: " + index, e);
-        }
+			searchFails++;
+			logger.debug("fail " + searchFails);
+			return Position.POSITION_NOT_FOUND;
 
-        return position;
-    }
+		} catch (Exception e) {
+			logger.error("error in calculatePosition at index: " + index, e);
+		}
 
-    private Position getValidePrePosition(int index) {
-        Position prePosition = Position.POSITION_NOT_FOUND;
-        for (index--; index >= 0; index--) {
-            TrackingImage trackedImage = getTrackingImage(index);
-            if (trackedImage == null) {
-                break;
-            }
-            if (!trackedImage.getPosition().isNotFound()) {
-                prePosition = trackedImage.getPosition();
-                break;
-            }
-        }
-        return prePosition;
-    }
+		return position;
+	}
 
-    private Position resetPrePosition(boolean[][] negImage, Position prePosition) {
+	private Position getValidePrePosition(int index) {
+		Position prePosition = Position.POSITION_NOT_FOUND;
+		for (index--; index >= 0; index--) {
+			TrackingImage trackedImage = getTrackingImage(index);
+			if (trackedImage == null) {
+				break;
+			}
+			if (!trackedImage.getPosition().isNotFound()) {
+				prePosition = trackedImage.getPosition();
+				break;
+			}
+		}
+		return prePosition;
+	}
 
-        int initialX = prePosition.isNotFound() ? settings.getRightBound() - settings.getLeftBound() : prePosition.getX();
-        int initialY = prePosition.isNotFound() ? settings.getBottomBound() - settings.getTopBound() : prePosition.getY();
+	private Position resetPrePosition(boolean[][] negImage, Position prePosition) {
 
-        int k = 1;
-        while (true) {
-            int startX = Math.max(-k, settings.getLeftBound() - initialX);
-            int startY = Math.max(-k, settings.getTopBound() - initialY);
-            int maxX = Math.min(k, settings.getRightBound() - initialX);
-            int maxY = Math.min(k, settings.getBottomBound() - initialY);
-            for (int x = startX; x <= maxX; x++) {
-                for (int y = startY; y <= maxY; y++) {
-                    if (Math.abs(x) != k && Math.abs(y) != k) {
-                        if (y != maxY) {
-                            y = maxY - 1;
-                        }
-                        continue;
-                    }
+		int initialX = prePosition.isNotFound() ? xMax - xMin : prePosition.getX();
+		int initialY = prePosition.isNotFound() ? yMax - yMin : prePosition.getY();
 
-                    Position p = new Position(initialX + x, initialY + y);
-                    if (negImage[p.getX()][p.getY()]) {
-                        if (isBallIndicator(negImage, p)) {
-                            return p;
-                        }
-                    }
-                }
-            }
-            if (startX == settings.getLeftBound() - initialX && maxX == settings.getRightBound() - initialX && startY == settings.getTopBound() - initialY && maxY == settings.getBottomBound() - initialY) {
-                break;
-            }
-            k++;
-        }
+		int k = 1;
+		while (true) {
+			int startX = Math.max(-k, xMin - initialX);
+			int startY = Math.max(-k, yMin - initialY);
+			int maxX = Math.min(k, xMax - initialX);
+			int maxY = Math.min(k, yMax - initialY);
+			for (int x = startX; x <= maxX; x++) {
+				for (int y = startY; y <= maxY; y++) {
+					if (Math.abs(x) != k && Math.abs(y) != k) {
+						if (y != maxY) {
+							y = maxY - 1;
+						}
+						continue;
+					}
 
-        return Position.POSITION_NOT_FOUND;
-    }
+					Position p = new Position(initialX + x, initialY + y);
+					if (negImage[p.getX()][p.getY()]) {
+						if (isBallIndicator(negImage, p)) {
+							return p;
+						}
+					}
+				}
+			}
+			if (startX == xMin - initialX && maxX == xMax - initialX && startY == yMin - initialY && maxY == yMax - initialY) {
+				break;
+			}
+			k++;
+		}
 
-    private boolean isBallIndicator(boolean[][] negImage, Position prePosition) {
+		return Position.POSITION_NOT_FOUND;
+	}
 
-        int initialX = prePosition.getX();
-        int initialY = prePosition.getY();
+	private boolean isBallIndicator(boolean[][] negImage, Position prePosition) {
 
-        for (int x = Math.max(-1, settings.getLeftBound() - initialX); x <= Math.min(1, settings.getRightBound() - initialX); x++) {
-            for (int y = Math.max(-1, settings.getTopBound() - initialY); y <= Math.min(1, settings.getBottomBound() - initialY); y++) {
-                if (Math.abs(x) != 1 && Math.abs(y) != 1) {
-                    y = 0;
-                    continue;
-                }
+		int initialX = prePosition.getX();
+		int initialY = prePosition.getY();
 
-                Position p = new Position(initialX + x, initialY + y);
-                if (negImage[p.getX()][p.getY()]) {
-                    return true;
-                }
-            }
-        }
+		for (int x = Math.max(-1, xMin - initialX); x <= Math.min(1, xMax - initialX); x++) {
+			for (int y = Math.max(-1, yMin - initialY); y <= Math.min(1, yMax - initialY); y++) {
+				if (Math.abs(x) != 1 && Math.abs(y) != 1) {
+					y = 0;
+					continue;
+				}
 
-        return false;
-    }
+				Position p = new Position(initialX + x, initialY + y);
+				if (negImage[p.getX()][p.getY()]) {
+					return true;
+				}
+			}
+		}
 
-    private Position findNextBallPosition(boolean[][] negImage, Position prePosition) {
+		return false;
+	}
 
-        int initialX = prePosition.getX();
-        int initialY = prePosition.getY();
+	private Position findNextBallPosition(boolean[][] negImage, Position prePosition) {
 
-        int k = 1;
-        while (k <= settings.getRadiusSearchSmall()) {
-            int maxX = Math.min(k, settings.getRightBound() - initialX);
-            int maxY = Math.min(k, settings.getBottomBound() - initialY);
-            for (int x = Math.max(-k, settings.getLeftBound() - initialX); x <= maxX; x++) {
-                for (int y = Math.max(-k, settings.getTopBound() - initialY); y <= maxY; y++) {
-                    if (Math.abs(x) != k && Math.abs(y) != k) {
-                        if (y != maxY) {
-                            y = maxY - 1;
-                        }
-                        continue;
-                    }
+		int initialX = prePosition.getX();
+		int initialY = prePosition.getY();
 
-                    Position p = new Position(initialX + x, initialY + y);
-                    if (negImage[p.getX()][p.getY()]) {
-                        if (isBallIndicator(negImage, p)) {
-                            return p;
-                        }
-                    }
-                }
-            }
-            k++;
-        }
+		int k = 1;
+		while (k <= settings.getRadiusSearchSmall()) {
+			int maxX = Math.min(k, xMax - initialX);
+			int maxY = Math.min(k, yMax - initialY);
+			for (int x = Math.max(-k, xMin - initialX); x <= maxX; x++) {
+				for (int y = Math.max(-k, yMin - initialY); y <= maxY; y++) {
+					if (Math.abs(x) != k && Math.abs(y) != k) {
+						if (y != maxY) {
+							y = maxY - 1;
+						}
+						continue;
+					}
 
-        return Position.POSITION_NOT_FOUND;
-    }
+					Position p = new Position(initialX + x, initialY + y);
+					if (negImage[p.getX()][p.getY()]) {
+						if (isBallIndicator(negImage, p)) {
+							return p;
+						}
+					}
+				}
+			}
+			k++;
+		}
 
-    private Position getPositionAroundPrePosition(boolean[][] negImage, Position prePosition) {
+		return Position.POSITION_NOT_FOUND;
+	}
 
-        int initialX = prePosition.getX();
-        int initialY = prePosition.getY();
+	private Position getPositionAroundPrePosition(boolean[][] negImage, Position prePosition) {
 
-        int xMin = initialX;
-        int xMax = initialX;
-        int yMin = initialY;
-        int yMax = initialY;
+		int initialX = prePosition.getX();
+		int initialY = prePosition.getY();
 
-        boolean update = true;
-        int k = 1;
-        while (update) {
-            update = false;
-            int startX = Math.max(-k, settings.getLeftBound() - initialX);
-            int startY = Math.max(-k, settings.getTopBound() - initialY);
-            int maxX = Math.min(k, settings.getRightBound() - initialX);
-            int maxY = Math.min(k, settings.getBottomBound() - initialY);
-            for (int x = startX; x <= maxX; x++) {
-                for (int y = startY; y <= maxY; y++) {
-                    if (Math.abs(x) != k && Math.abs(y) != k) {
-                        if (y != maxY) {
-                            y = maxY - 1;
-                        }
-                        continue;
-                    }
+		int xMin = initialX;
+		int xMax = initialX;
+		int yMin = initialY;
+		int yMax = initialY;
 
-                    Position p = new Position(initialX + x, initialY + y);
-                    if (negImage[p.getX()][p.getY()]) {
-                        if (xMin > p.getX()) {
-                            xMin = p.getX();
-                            update = true;
-                        }
-                        if (yMin > p.getY()) {
-                            yMin = p.getY();
-                            update = true;
-                        }
-                        if (xMax < p.getX()) {
-                            xMax = p.getX();
-                            update = true;
-                        }
-                        if (yMax < p.getY()) {
-                            yMax = p.getY();
-                            update = true;
-                        }
-                    }
-                }
-            }
-            k++;
-        }
+		boolean update = true;
+		int k = 1;
+		while (update) {
+			update = false;
+			int startX = Math.max(-k, xMin - initialX);
+			int startY = Math.max(-k, yMin - initialY);
+			int maxX = Math.min(k, xMax - initialX);
+			int maxY = Math.min(k, yMax - initialY);
+			for (int x = startX; x <= maxX; x++) {
+				for (int y = startY; y <= maxY; y++) {
+					if (Math.abs(x) != k && Math.abs(y) != k) {
+						if (y != maxY) {
+							y = maxY - 1;
+						}
+						continue;
+					}
 
-        return new Position((xMax + xMin) / 2, (yMax + yMin) / 2);
-    }
+					Position p = new Position(initialX + x, initialY + y);
+					if (negImage[p.getX()][p.getY()]) {
+						if (xMin > p.getX()) {
+							xMin = p.getX();
+							update = true;
+						}
+						if (yMin > p.getY()) {
+							yMin = p.getY();
+							update = true;
+						}
+						if (xMax < p.getX()) {
+							xMax = p.getX();
+							update = true;
+						}
+						if (yMax < p.getY()) {
+							yMax = p.getY();
+							update = true;
+						}
+					}
+				}
+			}
+			k++;
+		}
+
+		return new Position((xMax + xMin) / 2, (yMax + yMin) / 2);
+	}
 }
