@@ -70,6 +70,18 @@
 			</plugin>
 
 			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.build.release.dir}/doku</directory>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.6</version>
 				<executions>
@@ -115,11 +127,11 @@
 							<outputDirectory>${project.build.release.dir}/doku</outputDirectory>
 							<resources>
 								<resource>
+									<filtering>false</filtering>
 									<directory>doku</directory>
 									<includes>
 										<include>**/*.pdf</include>
 									</includes>
-									<filtering>true</filtering>
 								</resource>
 							</resources>
 						</configuration>
