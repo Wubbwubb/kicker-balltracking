@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 
@@ -76,13 +75,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 	}
 
 	private Position calculatePosition(int index, File file, BallShape ballShape) {
-		Random r = new Random();
-		int x = r.nextInt(this.xMax - this.xMin) + this.xMin;
-		int y = r.nextInt(this.yMax - this.yMin) + this.yMin;
-		Position position = new Position(x, y);
-
 		try {
-
 			TrackingImage preTrackingImage = getTrackingImage(index - 1);
 			Position prePosition = getValidePrePosition(index);
 
@@ -137,15 +130,13 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 
 			}
 
-			searchFails++;
-			logger.debug("fail " + searchFails);
-			return Position.POSITION_NOT_FOUND;
-
 		} catch (Exception e) {
 			logger.error("error in calculatePosition at index: " + index, e);
 		}
 
-		return position;
+		searchFails++;
+		logger.debug("fail " + searchFails);
+		return Position.POSITION_NOT_FOUND;
 	}
 
 	private Position getValidePrePosition(int index) {
