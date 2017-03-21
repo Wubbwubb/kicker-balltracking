@@ -147,8 +147,7 @@ public class AutomaticBallTracking extends AbstractBallTracking implements IAuto
 				break;
 			}
 			if (!trackedImage.getPosition().isNotFound()) {
-				prePosition = trackedImage.getPosition();
-				break;
+				return trackedImage.getPosition();
 			}
 		}
 		return prePosition;
