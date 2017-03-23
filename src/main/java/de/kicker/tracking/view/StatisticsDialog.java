@@ -174,20 +174,28 @@ class StatisticsDialog extends Stage {
 			TrackingImage autoImg = automaticBallTracking.getTrackingImage(i);
 			TrackingImage manualImg = manualBallTracking.getTrackingImage(i);
 			if (autoImg != null && manualImg != null) {
-				if (!Objects.equals(autoImg.getPosition(), Position.POSITION_NOT_FOUND) && Objects.equals(manualImg.getPosition
-						(), Position.POSITION_NOT_FOUND)) {
+				boolean autoNotFound = Objects.equals(autoImg.getPosition(), Position.POSITION_NOT_FOUND);
+				boolean manualNotFound = Objects.equals(manualImg.getPosition(), Position.POSITION_NOT_FOUND);
+				if (!autoNotFound && manualNotFound) {
 					falsePositives++;
-				} else if (Objects.equals(autoImg.getPosition(), Position.POSITION_NOT_FOUND) && !Objects.equals(manualImg
-						.getPosition(), Position.POSITION_NOT_FOUND)) {
+				} else if (autoNotFound && !manualNotFound) {
 					falseNegatives++;
 				}
 				if (Objects.equals(autoImg.getPosition(), manualImg.getPosition())) {
 					noOfEquals++;
 				}
-				double tmpDist = Position.getDistance(autoImg.getPosition(), manualImg.getPosition());
-				maxDist = Math.max(maxDist, tmpDist);
-				minDist = Math.min(minDist, tmpDist);
-				avgDist = (avgDist * totalCompare + tmpDist) / (double) (totalCompare + 1);
+				if (autoNotFound == manualNotFound) {
+					double tmpDist = Position.getDistance(autoImg.getPosition(), manualImg.getPosition());
+					if (maxDist < tmpDist) {
+						maxDist = tmpDist;
+						logger.debug("max dist at '" + autoImg.getFile().getName() + "'");
+					}
+					if (minDist > tmpDist) {
+						minDist = tmpDist;
+						logger.debug("min dist at '" + autoImg.getFile().getName() + "'");
+					}
+					avgDist = (avgDist * totalCompare + tmpDist) / (double) (totalCompare + 1);
+				}
 				totalCompare++;
 			}
 		}

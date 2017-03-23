@@ -370,6 +370,31 @@ public class BallTrackingApplication extends Application {
 		gridPane.add(btnPositionRight, 2, 7);
 		gridPane.add(btnPositionBottom, 1, 8);
 
+		Button btnSamePosition = new Button("same position");
+		btnSamePosition.setOnAction(event -> {
+			if (trackingFactory == null || trackingFactory.getAutomaticBallTracking() == null || trackingFactory.getManualBallTracking() == null) {
+				return;
+			}
+			TrackingImage imgAuto = trackingFactory.getAutomaticBallTracking().getTrackingImage(currentIndex);
+			if (imgAuto == null || imgAuto.getPosition() == null) {
+				return;
+			}
+			trackingFactory.trackManual(currentIndex, currentFile, imgAuto.getPosition());
+			refreshImageView(!showPath.isSelected());
+		});
+
+		Button btnNotFound = new Button("position not found");
+		btnNotFound.setOnAction(event -> {
+			if (trackingFactory == null || trackingFactory.getManualBallTracking() == null) {
+				return;
+			}
+			trackingFactory.trackManual(currentIndex, currentFile, Position.POSITION_NOT_FOUND);
+			refreshImageView(!showPath.isSelected());
+		});
+
+//		gridPane.add(btnSamePosition, 0, 10, 3, 1);
+//		gridPane.add(btnNotFound, 0, 11, 3, 1);
+
 		borderPaneMain.setCenter(borderPaneImage);
 		borderPaneMain.setRight(gridPane);
 
